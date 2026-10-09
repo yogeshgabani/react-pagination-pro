@@ -90,6 +90,35 @@ until something has `hit` that key — it isn't an error, it means zero. The hoo
 maps 404→0; a regression here strands the cards on "—" forever, because only
 `hit` creates the key.
 
+**npm downloads card** (`useNpmDownloads.ts`) reads api.npmjs.org — read-only,
+so no throwaway namespace needed. The API caps a query at 18 months and
+*silently clamps* longer ranges (no error), so the hook sums back-to-back
+540-day windows until one returns `downloads: 0`. Expect exactly two requests
+for a package younger than 18 months; four means StrictMode de-dupe broke.
+
+## Open Graph card
+
+`scripts/og-image.ts` (Satori → resvg, 1200×630) + `scripts/vite-plugin-og.ts`.
+Neither is in tsconfig's `include` (same as vite.config.ts) — `test/ogImage.test.ts`
+is what exercises them. Preview in dev at `http://localhost:5188/og-image.png`;
+editing the template restarts the dev server (it's a config dependency).
+
+Build with a fake Netlify URL to check the tags come out absolute:
+
+```bash
+URL=https://x.netlify.app CONTEXT=production npm run demo:build
+grep -o '<meta property="og:image"[^>]*>' demo/dist/index.html   # absolute, ?v=<hash>
+```
+
+Satori is pinned exactly (it shipped ~15 releases in one week of Oct 2026) and
+reads only TTF/OTF/**WOFF** — not woff2.
+
+**Look at the PNG after any satori / fflate change** — `ogImage.test.ts` only
+checks dimensions, so a card where every glyph renders as a "NO GLYPH" box
+still passes. `package.json` overrides fflate to `~0.7.5` (patched backport of
+an `npm audit` advisory; satori pins the vulnerable 0.7.3). Don't move it to
+0.8: its `inflateSync` signature changed and every glyph breaks exactly that way.
+
 To verify the packaged build rather than dev:
 
 ```bash
@@ -111,3 +140,11 @@ npx vite preview --port 4173     # NOT --outDir demo/dist: outDir resolves
 - **Active page contrast** — variants that set a light `.rpp-item` background
   out-specify the base `.rpp-active` rule; the active number has repeatedly
   gone white-on-white. Eyeball the gallery in *both* schemes after CSS edits.
+  Same trap for filled buttons (`.rpp-goto-btn`, jump, load-more): check them
+  **hovered** too — the generic `.rpp-item:hover…` is (0,4,0), so a filled
+  button's own hover needs the `.rpp-item.rpp-x-btn:hover` doubling.
+- **Bar variants on a phone** — at 320/375px, assert nothing inside
+  `nav.rpp-bar` paints outside its box. The narrow layout is a container
+  query (≤520px); it must stay `flex-wrap: nowrap` + `align-items: stretch`,
+  because a *wrapping* column flexbox doesn't cap item width and the page
+  list / Go spill out.

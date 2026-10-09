@@ -979,12 +979,20 @@
   white-space: nowrap;
 }
 
-/* Go-to-page control */
+/* Go-to-page control. Wraps only when the bar is too narrow for one line:
+   the label moves above the input + Go pair. */
 .rpp-goto {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px 8px;
   white-space: nowrap;
+}
+.rpp-goto-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 .rpp-goto-label {
   color: var(--rpp-muted);
@@ -1016,7 +1024,9 @@
   border-color: var(--rpp-primary);
   font-weight: 600;
 }
-.rpp-goto-btn:hover:not(:disabled) {
+/* `.rpp-item` doubled up to out-rank the generic item hover, same as the jump
+   button above — otherwise Go washes out to a light surface under white text. */
+.rpp-item.rpp-goto-btn:hover:not(:disabled) {
   background: color-mix(in srgb, var(--rpp-primary) 85%, black);
   color: var(--rpp-on-primary);
   border-color: transparent;
@@ -1046,7 +1056,10 @@
   padding: 8px 12px;
   background: var(--rpp-surface);
   border: 1px solid color-mix(in srgb, var(--rpp-border) 60%, transparent);
-  border-radius: 999px;
+  /* Half a one-row bar's height (item + 8px padding + 1px border per side):
+     a true pill on one row, a rounded card once the bar stacks. A flat 999px
+     turned the stacked bar into an ellipse. */
+  border-radius: calc(var(--rpp-size) / 2 + 9px);
   box-shadow: 0 4px 14px rgba(2, 6, 23, 0.08);
 }
 .rpp-v-bar-pill .rpp-item { --rpp-radius: 999px; box-shadow: none; }
@@ -1060,9 +1073,13 @@
   border-color: transparent;
   box-shadow: none;
 }
-.rpp-v-bar-minimal .rpp-item:hover:not(:disabled):not(.rpp-active) {
+.rpp-v-bar-minimal .rpp-item:hover:not(:disabled):not(.rpp-active):not(.rpp-goto-btn) {
   background: var(--rpp-surface-hover);
 }
+/* The transparent-chip rule above also wiped the fill from the active page
+   and Go, leaving white text on a light page. */
+.rpp-v-bar-minimal .rpp-active,
+.rpp-v-bar-minimal .rpp-goto-btn { background: var(--rpp-primary); border-color: var(--rpp-primary); }
 
 /* Soft: neumorphic bar. */
 .rpp-v-bar-soft {
@@ -1076,7 +1093,10 @@
   background: #eef1f6;
   box-shadow: 3px 3px 6px #d3d8e2, -3px -3px 6px #ffffff;
 }
-.rpp-v-bar-soft .rpp-active { color: var(--rpp-on-primary); background: var(--rpp-primary); }
+/* The soft item rule repaints every .rpp-item grey, so re-fill the active
+   page and Go (which kept its white text on the grey chip). */
+.rpp-v-bar-soft .rpp-active,
+.rpp-v-bar-soft .rpp-goto-btn { color: var(--rpp-on-primary); background: var(--rpp-primary); }
 .rpp-v-bar-soft .rpp-goto-input { background: #eef1f6; border: none; box-shadow: inset 2px 2px 4px #d3d8e2, inset -2px -2px 4px #ffffff; }
 
 /* Dark: always-dark bar regardless of theme. */
@@ -1101,23 +1121,40 @@
   background: #1e293b;
   box-shadow: 3px 3px 6px #0f1419, -3px -3px 6px #2a3447;
 }
+/* …and again for dark, whose item rule out-specifies that re-fill. */
+.rpp-dark.rpp-v-bar-soft .rpp-active,
+.rpp-dark.rpp-v-bar-soft .rpp-goto-btn { color: var(--rpp-on-primary); background: var(--rpp-primary); }
 .rpp-dark.rpp-v-bar-soft .rpp-goto-input {
   background: #1e293b;
   box-shadow: inset 2px 2px 4px #0f1419, inset -2px -2px 4px #2a3447;
 }
 
-/* Responsive: stack the clusters and centre everything on a narrow bar. */
+/* Responsive: stack the clusters on a narrow bar, each full-width with its
+   content centred and wrapping. Must be single-line (nowrap) + stretch: in a
+   wrapping column flexbox the items aren't capped at the container width, so
+   the page list and go-to row used to spill out of the bar. */
 @container (max-width: 520px) {
   .rpp-bar-inner {
     flex-direction: column;
-    align-items: center;
-    gap: 12px;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .rpp-bar-start,
+  .rpp-bar-main,
+  .rpp-bar-end {
+    justify-content: center;
+    flex-wrap: wrap;
   }
   .rpp-bar-spread .rpp-bar-main { margin-inline: 0; }
 }
 /* Fallback for browsers without container queries. */
 @supports not (container-type: inline-size) {
   @media (max-width: 560px) {
-    .rpp-bar-inner { flex-direction: column; align-items: center; gap: 12px; }
+    .rpp-bar-inner { flex-direction: column; flex-wrap: nowrap; align-items: stretch; gap: 10px; }
+    .rpp-bar-start,
+    .rpp-bar-main,
+    .rpp-bar-end { justify-content: center; flex-wrap: wrap; }
+    .rpp-bar-spread .rpp-bar-main { margin-inline: 0; }
   }
 }

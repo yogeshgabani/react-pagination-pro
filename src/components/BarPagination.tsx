@@ -246,19 +246,22 @@ export function BarPagination(props: BarPaginationProps) {
   const gotoControl = showGoto && (
     <span className="rpp-goto">
       <span className="rpp-goto-label">{labels.goto}</span>
-      <input
-        className="rpp-goto-input"
-        type="text"
-        inputMode="numeric"
-        value={gotoValue}
-        placeholder={String(currentPage)}
-        onChange={(e) => setGotoValue(e.target.value)}
-        onKeyDown={onGotoKeyDown}
-        aria-label={labels.goto}
-      />
-      <button type="button" className="rpp-item rpp-goto-btn" onClick={submitGoto}>
-        {labels.go}
-      </button>
+      {/* Input + Go wrap as one unit, so a narrow bar never strands "Go". */}
+      <span className="rpp-goto-field">
+        <input
+          className="rpp-goto-input"
+          type="text"
+          inputMode="numeric"
+          value={gotoValue}
+          placeholder={String(currentPage)}
+          onChange={(e) => setGotoValue(e.target.value)}
+          onKeyDown={onGotoKeyDown}
+          aria-label={labels.goto}
+        />
+        <button type="button" className="rpp-item rpp-goto-btn" onClick={submitGoto}>
+          {labels.go}
+        </button>
+      </span>
     </span>
   );
 

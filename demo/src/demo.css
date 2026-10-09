@@ -14,6 +14,9 @@
   --code-line: #1e293b;
   --shadow: 0 1px 3px rgba(2, 6, 23, 0.06);
   --shadow-lg: 0 24px 64px rgba(2, 6, 23, 0.18);
+  /* Header bar height (excluding its 1px border). The sticky tabs dock right
+     under it, so both read this one value. */
+  --header-h: 62px;
   color-scheme: light;
 }
 body.dark {
@@ -95,18 +98,23 @@ body {
   border-bottom: 1px solid var(--line);
 }
 .site-header-inner {
-  max-width: 1120px; margin: 0 auto; padding: 12px 20px;
+  max-width: 1120px; height: var(--header-h); margin: 0 auto; padding: 0 20px;
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
 }
-.brand { display: inline-flex; align-items: center; gap: 9px; text-decoration: none; color: var(--ink); }
+/* min-width: 0 lets the name shrink (and ellipsize) instead of wrapping onto
+   extra lines, which would push the header past --header-h. */
+.brand { display: inline-flex; align-items: center; gap: 9px; min-width: 0; text-decoration: none; color: var(--ink); }
 .brand-mark {
-  display: inline-flex; align-items: center; justify-content: center;
+  display: inline-flex; align-items: center; justify-content: center; flex: none;
   width: 30px; height: 30px; border-radius: 9px; font-size: 15px;
   background: linear-gradient(135deg, var(--brand), #7c3aed); color: #fff;
   box-shadow: 0 4px 12px color-mix(in srgb, var(--brand) 40%, transparent);
 }
-.brand-name { font-weight: 700; font-size: 15px; letter-spacing: -0.01em; }
-.site-links { display: inline-flex; align-items: center; gap: 8px; }
+.brand-name {
+  font-weight: 700; font-size: 15px; letter-spacing: -0.01em;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.site-links { display: inline-flex; align-items: center; gap: 8px; flex: none; }
 /* Covers both the <a> (URL configured) and the <button> the SiteLink falls back
    to when the URL is blank — without this the button keeps its native chrome.
    Mirrors the footer's .fbtn so the header and footer read as one system. */
@@ -164,7 +172,7 @@ body {
 /* ============================ Tabs ============================ */
 .tabs { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 0 0 26px; }
 .tabs-sticky {
-  position: sticky; top: 63px; z-index: 40;
+  position: sticky; top: calc(var(--header-h) + 1px); z-index: 40;
   padding: 12px; border-radius: 16px; margin-bottom: 22px;
   background: color-mix(in srgb, var(--card) 80%, transparent);
   backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
@@ -525,7 +533,7 @@ body {
 .fbuilt:hover { border-color: color-mix(in srgb, var(--brand) 55%, transparent); transform: translateY(-1px); }
 
 /* ---- Stat cards ---- */
-.fstats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 26px; }
+.fstats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 26px; }
 .fstat {
   position: relative; overflow: hidden;
   display: flex; align-items: center; gap: 14px;
@@ -586,13 +594,18 @@ body {
 @keyframes soon-pop { from { opacity: 0; transform: translateY(8px) scale(0.97); } }
 
 /* ============================ Responsive ============================ */
-@media (max-width: 900px) {
+@media (max-width: 1040px) {
   .fstats { grid-template-columns: 1fr 1fr; }
 }
 @media (max-width: 640px) {
+  :root { --header-h: 56px; }
+  .site-header-inner { padding: 0 16px; gap: 10px; }
+  .brand-name { font-size: 14px; }
+  /* Icon-only resource links; SiteLink's aria-label still names them. */
   .site-links a,
-  .site-links button:not(.theme-toggle) { padding: 6px 9px; }
-  .tabs-sticky { top: 60px; }
+  .site-links button:not(.theme-toggle) { width: 36px; height: 36px; padding: 0; justify-content: center; }
+  .site-link-label { display: none; }
+  .theme-toggle { width: 36px; height: 36px; margin-left: 0; }
   .card { padding: 18px; border-radius: 16px; }
   .modal { padding: 18px; border-radius: 16px; }
   .hero-cta { flex-direction: column; }
@@ -607,7 +620,17 @@ body {
 }
 @media (max-width: 420px) {
   .gallery { grid-template-columns: 1fr; }
+  /* card > tile > stage > component nests ~170px of padding at 320px; trim it
+     so wide components (the bar variants) keep room for their page buttons. */
+  .card { padding: 14px; }
+  .gallery .tile { padding: 12px; }
+  .gallery .tile .stage { padding: 10px; }
   /* Matched by class, not [href]: the link is a <button> with no href when
-     VITE_NPM_URL is blank. */
-  .site-link-npm { display: none; }
+     VITE_NPM_URL is blank. Needs 3 classes to out-rank the
+     `.site-links button:not(.theme-toggle)` rule that sets display. */
+  .site-header .site-links .site-link-npm { display: none; }
+}
+@media (max-width: 360px) {
+  /* Fits the full name at 320px; the ellipsis still covers wider fonts. */
+  .brand-name { font-size: 13px; }
 }

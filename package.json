@@ -51,6 +51,8 @@
     "react-dom": ">=18.0.0"
   },
   "devDependencies": {
+    "@fontsource/inter": "5.2.8",
+    "@resvg/resvg-js": "2.6.2",
     "@testing-library/react": "^16.0.0",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
@@ -58,12 +60,14 @@
     "jsdom": "^24.1.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "satori": "0.33.5",
     "tsup": "^8.1.0",
     "typescript": "^5.5.3",
     "vite": "^8.3.4",
     "vitest": "^5.0.3"
   },
   "overrides": {
-    "esbuild": "^0.28.2"
+    "esbuild": "^0.28.2",
+    "fflate": "~0.7.5"
   }
 }

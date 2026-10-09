@@ -1,6 +1,7 @@
 import { AUTHOR, LAST_UPDATED, LINKS, SiteLink } from "./links";
 import { BrandIcon } from "./BrandIcon";
 import { useSiteStats } from "./useSiteStats";
+import { useNpmDownloads } from "./useNpmDownloads";
 
 const AUTHOR_FIRST = AUTHOR.split(" ")[0];
 
@@ -24,6 +25,7 @@ const STAT_ICONS: Record<string, JSX.Element> = {
       <circle cx="9" cy="7" r="4" />
     </>
   ),
+  download: <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />,
 };
 
 const StatIcon = ({ name }: { name: string }) => (
@@ -70,12 +72,14 @@ const formatDate = (raw?: string) => {
 export function SiteFooter({ variantCount }: { variantCount: number }) {
   // Counted automatically on each visit; null until the service answers.
   const { hits, visitors } = useSiteStats();
+  const downloads = useNpmDownloads("react-next-pagination-pro");
   const num = (n: number | null) => (n === null ? undefined : n.toLocaleString());
 
   const stats = [
     { key: "calendar", label: "Last updated", value: formatDate(LAST_UPDATED) },
     { key: "eye", label: "Total hits", value: num(hits) },
     { key: "users", label: "Total visitors", value: num(visitors), live: true },
+    { key: "download", label: "npm downloads", value: num(downloads) },
   ];
 
   return (

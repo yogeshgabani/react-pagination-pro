@@ -25,11 +25,12 @@ describe("<SiteFooter />", () => {
     expect(screen.getByText("MIT")).toBeTruthy();
   });
 
-  it("renders the three stat cards", () => {
+  it("renders the four stat cards", () => {
     renderFooter();
     expect(screen.getByText("Last updated")).toBeTruthy();
     expect(screen.getByText("Total hits")).toBeTruthy();
     expect(screen.getByText("Total visitors")).toBeTruthy();
+    expect(screen.getByText("npm downloads")).toBeTruthy();
   });
 
   it("stamps 'Last updated' from the build date without any env config", () => {
@@ -41,12 +42,12 @@ describe("<SiteFooter />", () => {
 
   it("shows a placeholder rather than a fabricated count until the counter answers", () => {
     const { container } = renderFooter();
-    // fetch is stubbed out below, so hits/visitors never resolve: the cards
-    // must show an em dash instead of inventing a number.
-    const [, hits, visitors] = [...container.querySelectorAll(".fstat-value")].map(
+    // fetch is stubbed out above, so hits/visitors/downloads never resolve:
+    // the cards must show an em dash instead of inventing a number.
+    const [, hits, visitors, downloads] = [...container.querySelectorAll(".fstat-value")].map(
       (n) => n.textContent,
     );
-    expect([hits, visitors]).toEqual(["—", "—"]);
+    expect([hits, visitors, downloads]).toEqual(["—", "—", "—"]);
   });
 
   it("opens the Coming soon dialog when a link has no URL configured", () => {

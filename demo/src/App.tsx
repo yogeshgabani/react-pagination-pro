@@ -1267,10 +1267,10 @@ export function App() {
           </a>
           <nav className="site-links" aria-label="Resources">
             <SiteLink url={LINKS.npm} label="npm package" className="site-link-npm">
-              <BrandIcon name="npm" /> npm
+              <BrandIcon name="npm" /> <span className="site-link-label">npm</span>
             </SiteLink>
             <SiteLink url={LINKS.github} label="GitHub repo">
-              <BrandIcon name="github" /> GitHub
+              <BrandIcon name="github" /> <span className="site-link-label">GitHub</span>
             </SiteLink>
             <button
               type="button"
