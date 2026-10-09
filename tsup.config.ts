@@ -10,7 +10,8 @@ export default defineConfig({
   dts: { entry: "src/index.ts" },
   sourcemap: true,
   clean: true,
-  treeshake: true,
+  // No `treeshake`: it re-bundles through Rollup, which strips the
+  // "use client" banner below. esbuild already tree-shakes the bundle.
   external: ["react", "react-dom"],
   esbuildOptions(options) {
     options.banner = {
