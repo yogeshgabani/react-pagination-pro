@@ -1,0 +1,1123 @@
+/* ============================================================
+   react-next-pagination-pro — design system
+   Import once: import "react-next-pagination-pro/styles.css";
+   ============================================================ */
+
+.rpp {
+  /* Design tokens (overridable via the `theme` prop or your own CSS). */
+  --rpp-primary: #2563eb;
+  --rpp-on-primary: #ffffff;
+  --rpp-surface: #ffffff;
+  --rpp-surface-hover: #f1f5f9;
+  --rpp-text: #0f172a;
+  --rpp-muted: #94a3b8;
+  --rpp-border: #e2e8f0;
+  --rpp-radius: 10px;
+  --rpp-gap: 6px;
+  --rpp-font-size: 14px;
+  --rpp-size: 38px;
+  --rpp-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  max-width: 100%;
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color: var(--rpp-text);
+}
+
+.rpp-list {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--rpp-gap);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-width: 100%;
+}
+
+.rpp-item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--rpp-size);
+  height: var(--rpp-size);
+  padding: 0 10px;
+  border: 1px solid var(--rpp-border);
+  /* Radius precedence: theme prop > shape prop > variant/base default. */
+  border-radius: var(--rpp-radius-user, var(--rpp-shape-radius, var(--rpp-radius)));
+  background: var(--rpp-surface);
+  color: var(--rpp-text);
+  font-size: var(--rpp-font-size);
+  font-weight: 500;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: var(--rpp-shadow);
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease,
+    transform 0.12s ease, box-shadow 0.15s ease;
+  user-select: none;
+}
+
+.rpp-item:hover:not(:disabled):not(.rpp-active) {
+  background: var(--rpp-surface-hover);
+  border-color: var(--rpp-primary);
+}
+
+.rpp-item:focus-visible {
+  outline: 2px solid var(--rpp-primary);
+  outline-offset: 2px;
+}
+
+.rpp-item:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.rpp-active {
+  /* --rpp-active-bg lets the theme builder inject a solid color OR a gradient. */
+  background: var(--rpp-active-bg, var(--rpp-primary));
+  border-color: var(--rpp-primary);
+  color: var(--rpp-on-primary);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--rpp-primary) 35%, transparent);
+  /* Smooth "pop" whenever a new page becomes active (the component remounts the
+     active button by key, so this re-triggers on every page change). */
+  animation: rpp-pop 0.28s cubic-bezier(0.2, 0.8, 0.3, 1.2);
+}
+
+.rpp-ellipsis {
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+  color: var(--rpp-muted);
+  cursor: default;
+}
+
+.rpp-nav {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.rpp-summary,
+.rpp-compact-label,
+.rpp-loadmore-count {
+  font-size: var(--rpp-font-size);
+  color: var(--rpp-muted);
+}
+
+.rpp-jump {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--rpp-gap);
+}
+
+.rpp-jump-input {
+  width: 72px;
+  height: var(--rpp-size);
+  padding: 0 8px;
+  border: 1px solid var(--rpp-border);
+  /* Radius precedence: theme prop > shape prop > variant/base default. */
+  border-radius: var(--rpp-radius-user, var(--rpp-shape-radius, var(--rpp-radius)));
+  background: var(--rpp-surface);
+  color: var(--rpp-text);
+  font-size: var(--rpp-font-size);
+}
+
+.rpp-jump-input:focus-visible {
+  outline: 2px solid var(--rpp-primary);
+  outline-offset: 1px;
+}
+
+.rpp-jump-btn,
+.rpp-loadmore-btn {
+  background: var(--rpp-primary);
+  color: var(--rpp-on-primary);
+  border-color: var(--rpp-primary);
+  padding: 0 16px;
+}
+
+/* Filled buttons stay filled on hover (the generic .rpp-item hover would wash
+   them out to a light surface while the text stays light — unreadable). */
+.rpp-item.rpp-jump-btn:hover:not(:disabled),
+.rpp-item.rpp-loadmore-btn:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--rpp-primary) 85%, black);
+  border-color: color-mix(in srgb, var(--rpp-primary) 85%, black);
+  color: var(--rpp-on-primary);
+}
+
+.rpp-compact,
+.rpp-cursor,
+.rpp-loadmore {
+  gap: var(--rpp-gap);
+}
+
+.rpp-loadmore {
+  flex-direction: column;
+}
+
+.rpp-sr-only,
+.rpp-item .rpp-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---------------- Table pagination (data-grid footer bar) ----------------
+   Matches the classic grid footer: [10 ▾] 1 - 4 / 4 ............ [1] OF 1
+   Base look mirrors the "table-footer" variant; other table-* variants tweak. */
+.rpp-table {
+  display: block;
+  width: 100%;
+  padding: 10px 14px;
+  background: var(--rpp-surface);
+  border-top: 1px solid var(--rpp-border);
+  /* Query container: the bar adapts to the width of whatever holds it
+     (card, grid tile, table footer) — not just the viewport. */
+  container-type: inline-size;
+}
+
+.rpp-table-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  /* Single row by default; wraps + centers in narrow containers (below). */
+  flex-wrap: nowrap;
+  gap: 12px;
+}
+
+.rpp-table-left,
+.rpp-table-right {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 10px;
+}
+
+/* Narrow container (small card / grid tile / phone): wrap + center. */
+@container (max-width: 430px) {
+  .rpp-table-inner {
+    flex-wrap: wrap;
+    justify-content: center;
+    row-gap: 8px;
+  }
+  .rpp-table-left,
+  .rpp-table-right {
+    justify-content: center;
+  }
+}
+
+/* Fallback for browsers without container queries. */
+@supports not (container-type: inline-size) {
+  @media (max-width: 480px) {
+    .rpp-table-inner {
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+  }
+}
+
+/* Custom rows-per-page dropdown (fully styled — no native select). */
+.rpp-select {
+  position: relative;
+  display: inline-flex;
+}
+
+.rpp-select-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: calc(var(--rpp-size) - 6px);
+  padding: 0 10px;
+  /* Border + fill are opacity tints of the active color, so picking a color
+     visibly recolors these chips (not just the text). */
+  border: 1px solid color-mix(in srgb, var(--rpp-primary) 30%, var(--rpp-border));
+  border-radius: var(--rpp-radius-user, var(--rpp-shape-radius, 8px));
+  background: color-mix(in srgb, var(--rpp-primary) 8%, var(--rpp-surface));
+  color: var(--rpp-primary);
+  font-size: var(--rpp-font-size);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+.rpp-select-btn:hover {
+  border-color: var(--rpp-primary);
+  background: color-mix(in srgb, var(--rpp-primary) 14%, var(--rpp-surface));
+}
+
+.rpp-select-btn:focus-visible {
+  outline: 2px solid var(--rpp-primary);
+  outline-offset: 1px;
+}
+
+.rpp-select-chevron {
+  color: var(--rpp-muted);
+  flex-shrink: 0;
+  transition: transform 0.15s ease;
+}
+
+.rpp-select-btn[aria-expanded="true"] .rpp-select-chevron {
+  transform: rotate(180deg);
+}
+
+@keyframes rpp-select-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes rpp-select-in-up {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.rpp-select-list {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 30;
+  min-width: 100%;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  background: var(--rpp-surface);
+  border: 1px solid var(--rpp-border);
+  border-radius: 10px;
+  box-shadow: 0 10px 28px rgba(2, 6, 23, 0.16);
+  animation: rpp-select-in 0.14s ease;
+}
+
+/* Flipped above the trigger when there's no room below (auto-detected). */
+.rpp-select-list-up {
+  top: auto;
+  bottom: calc(100% + 4px);
+  box-shadow: 0 -10px 28px rgba(2, 6, 23, 0.16);
+  animation: rpp-select-in-up 0.14s ease;
+}
+
+.rpp-select-opt {
+  padding: 7px 12px;
+  border-radius: 7px;
+  font-size: var(--rpp-font-size);
+  font-variant-numeric: tabular-nums;
+  color: var(--rpp-text);
+  text-align: center;
+  cursor: pointer;
+  user-select: none;
+}
+
+.rpp-select-opt.is-hi {
+  background: var(--rpp-surface-hover);
+}
+
+.rpp-select-opt.is-selected {
+  color: var(--rpp-primary);
+  font-weight: 700;
+  background: color-mix(in srgb, var(--rpp-primary) 10%, transparent);
+}
+
+.rpp-range {
+  font-size: var(--rpp-font-size);
+  color: var(--rpp-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.rpp-pagebox {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 12px 5px 5px;
+  border: 1px solid color-mix(in srgb, var(--rpp-primary) 30%, var(--rpp-border));
+  border-radius: var(--rpp-radius-user, var(--rpp-shape-radius, 8px));
+  background: color-mix(in srgb, var(--rpp-primary) 6%, var(--rpp-surface));
+  font-size: calc(var(--rpp-font-size) - 2px);
+  color: var(--rpp-text);
+}
+
+.rpp-pagebox-input {
+  width: 30px;
+  height: calc(var(--rpp-size) - 14px);
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--rpp-primary) 10%, transparent);
+  color: var(--rpp-primary);
+  font-size: calc(var(--rpp-font-size) - 2px);
+  font-weight: 600;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.rpp-pagebox-input:focus-visible {
+  outline: 2px solid var(--rpp-primary);
+  outline-offset: 1px;
+}
+
+.rpp-pagebox-of {
+  color: var(--rpp-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.rpp-pagebox-total {
+  font-variant-numeric: tabular-nums;
+}
+
+.rpp-table .rpp-nav {
+  /* Slightly smaller than regular page buttons; tracks the size prop. */
+  --rpp-size: calc(var(--rpp-font-size) * 2 + 4px);
+  box-shadow: none;
+}
+
+/* ---------------- Sizes ---------------- */
+.rpp-s-sm {
+  --rpp-size: 30px;
+  --rpp-font-size: 12px;
+  --rpp-gap: 4px;
+}
+.rpp-s-md {
+  --rpp-size: 38px;
+}
+.rpp-s-lg {
+  --rpp-size: 46px;
+  --rpp-font-size: 16px;
+  --rpp-gap: 8px;
+}
+
+/* ---------------- Shapes ----------------
+   `rounded` is the neutral default: it sets no --rpp-shape-radius so each
+   variant keeps its own designed radius. The other shapes override variants. */
+.rpp-shape-square {
+  --rpp-shape-radius: 0px;
+}
+.rpp-shape-pill {
+  --rpp-shape-radius: 999px;
+}
+.rpp-shape-circle {
+  --rpp-shape-radius: 999px;
+}
+.rpp-shape-circle .rpp-item {
+  padding: 0;
+}
+
+/* ---------------- Color presets ---------------- */
+.rpp-c-blue {
+  --rpp-primary: #2563eb;
+}
+.rpp-c-purple {
+  --rpp-primary: #7c3aed;
+}
+.rpp-c-green {
+  --rpp-primary: #16a34a;
+}
+.rpp-c-orange {
+  --rpp-primary: #ea580c;
+}
+.rpp-c-red {
+  --rpp-primary: #dc2626;
+}
+.rpp-c-pink {
+  --rpp-primary: #db2777;
+}
+.rpp-c-cyan {
+  --rpp-primary: #0891b2;
+}
+.rpp-c-indigo {
+  --rpp-primary: #4f46e5;
+}
+.rpp-c-emerald {
+  --rpp-primary: #059669;
+}
+.rpp-c-gray {
+  --rpp-primary: #475569;
+}
+
+/* ---------------- Dark mode ---------------- */
+.rpp-dark {
+  --rpp-surface: #1e293b;
+  --rpp-surface-hover: #334155;
+  --rpp-text: #e2e8f0;
+  --rpp-muted: #64748b;
+  --rpp-border: #334155;
+  --rpp-on-primary: #ffffff;
+  --rpp-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+@media (prefers-color-scheme: dark) {
+  .rpp-v-minimal-light:not(.rpp-dark) {
+    /* keep light variants intentionally light */
+  }
+}
+
+/* ---------------- Animations ---------------- */
+@keyframes rpp-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes rpp-scale {
+  from { transform: scale(0.7); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+@keyframes rpp-slide {
+  from { transform: translateY(6px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+@keyframes rpp-bounce {
+  0% { transform: scale(0.6); }
+  60% { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+@keyframes rpp-flip {
+  from { transform: rotateX(90deg); opacity: 0; }
+  to { transform: rotateX(0); opacity: 1; }
+}
+@keyframes rpp-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--rpp-primary) 45%, transparent); }
+  50% { box-shadow: 0 0 0 6px transparent; }
+}
+@keyframes rpp-pop {
+  0% { transform: scale(0.82); }
+  60% { transform: scale(1.09); }
+  100% { transform: scale(1); }
+}
+
+.rpp-anim-fade .rpp-page { animation: rpp-fade 0.3s ease both; }
+.rpp-anim-scale .rpp-page { animation: rpp-scale 0.3s ease both; }
+.rpp-anim-slide .rpp-page { animation: rpp-slide 0.3s ease both; }
+.rpp-anim-bounce .rpp-page { animation: rpp-bounce 0.4s ease both; }
+.rpp-anim-flip .rpp-page { animation: rpp-flip 0.4s ease both; }
+.rpp-anim-pulse .rpp-active { animation: rpp-pulse 1.6s ease-in-out infinite; }
+.rpp-anim-elastic .rpp-item:hover:not(:disabled) { transform: scale(1.12); }
+.rpp-anim-ripple .rpp-item:active:not(:disabled) { transform: scale(0.92); }
+
+.rpp-item:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rpp *,
+  .rpp .rpp-item {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* ============================================================
+   VARIANTS (100+). Each `.rpp-v-<name>` tweaks the tokens/appearance.
+   ============================================================ */
+
+/* ---- Minimal collection ---- */
+.rpp-v-minimal-light .rpp-item { --rpp-border: #e5e7eb; box-shadow: none; }
+.rpp-v-minimal-dark { --rpp-surface: #111827; --rpp-text: #f3f4f6; --rpp-border: #374151; --rpp-surface-hover: #1f2937; }
+.rpp-v-minimal-border .rpp-item { border-width: 2px; box-shadow: none; }
+.rpp-v-minimal-rounded .rpp-item { --rpp-radius: 999px; box-shadow: none; }
+.rpp-v-minimal-flat .rpp-item { border-color: transparent; box-shadow: none; background: transparent; }
+.rpp-v-minimal-flat .rpp-item:hover:not(:disabled) { background: var(--rpp-surface-hover); }
+.rpp-v-minimal-clean .rpp-item { border-color: transparent; box-shadow: none; }
+.rpp-v-minimal-modern .rpp-item { --rpp-radius: 12px; box-shadow: none; border-color: #edf0f5; }
+.rpp-v-minimal-modern .rpp-active { box-shadow: 0 6px 16px color-mix(in srgb, var(--rpp-primary) 30%, transparent); }
+.rpp-v-minimal-compact { --rpp-gap: 2px; }
+.rpp-v-minimal-compact .rpp-item { --rpp-size: 30px; padding: 0 6px; }
+.rpp-v-minimal-outline .rpp-item { background: transparent; box-shadow: none; }
+.rpp-v-minimal-outline .rpp-active { background: transparent; color: var(--rpp-primary); border-width: 2px; }
+.rpp-v-minimal-ghost .rpp-item { background: transparent; border-color: transparent; box-shadow: none; }
+.rpp-v-minimal-ghost .rpp-active { background: color-mix(in srgb, var(--rpp-primary) 14%, transparent); color: var(--rpp-primary); }
+
+/* ---- Modern collection ---- */
+.rpp-v-material .rpp-item { --rpp-radius: 4px; text-transform: none; box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
+.rpp-v-material .rpp-active { box-shadow: 0 3px 8px color-mix(in srgb, var(--rpp-primary) 40%, transparent); }
+.rpp-v-fluent .rpp-item { --rpp-radius: 6px; border-color: #d1d1d1; }
+.rpp-v-fluent .rpp-active { border-bottom: 3px solid color-mix(in srgb, var(--rpp-primary) 60%, black); }
+.rpp-v-apple .rpp-item { --rpp-radius: 10px; backdrop-filter: saturate(1.4); border-color: #d2d2d7; font-weight: 600; }
+.rpp-v-windows .rpp-item { --rpp-radius: 2px; border-color: #c7c7c7; }
+.rpp-v-android .rpp-item { --rpp-radius: 999px; text-transform: uppercase; font-size: 12px; letter-spacing: 0.03em; }
+.rpp-v-dashboard .rpp-item { --rpp-radius: 8px; background: #f8fafc; }
+.rpp-v-saas .rpp-item { --rpp-radius: 10px; border-color: #e6e9ef; }
+.rpp-v-saas .rpp-active { background: linear-gradient(180deg, color-mix(in srgb, var(--rpp-primary) 92%, white), var(--rpp-primary)); }
+.rpp-v-startup .rpp-item { --rpp-radius: 14px; font-weight: 600; }
+.rpp-v-enterprise .rpp-item { --rpp-radius: 6px; border-color: #cbd5e1; background: #fbfcfe; }
+.rpp-v-admin .rpp-item { --rpp-radius: 8px; background: #f1f5f9; border-color: transparent; }
+
+/* ---- Glass collection ---- */
+.rpp-v-glass-light .rpp-item,
+.rpp-v-glass-dark .rpp-item,
+.rpp-v-glass-neon .rpp-item,
+.rpp-v-glass-frosted .rpp-item,
+.rpp-v-glass-blur .rpp-item,
+.rpp-v-glass-gradient .rpp-item,
+.rpp-v-glass-premium .rpp-item,
+.rpp-v-glass-modern .rpp-item,
+.rpp-v-glass-floating .rpp-item,
+.rpp-v-glass-interactive .rpp-item {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  --rpp-radius: 14px;
+}
+.rpp-v-glass-light .rpp-item { background: rgba(255,255,255,0.55); border-color: rgba(255,255,255,0.6); }
+.rpp-v-glass-dark { --rpp-text: #f8fafc; }
+.rpp-v-glass-dark .rpp-item { background: rgba(30,41,59,0.45); border-color: rgba(255,255,255,0.12); }
+.rpp-v-glass-neon .rpp-item { background: rgba(15,23,42,0.5); border-color: color-mix(in srgb, var(--rpp-primary) 60%, transparent); color: #e2e8f0; box-shadow: 0 0 12px color-mix(in srgb, var(--rpp-primary) 45%, transparent); }
+.rpp-v-glass-neon .rpp-active { box-shadow: 0 0 18px color-mix(in srgb, var(--rpp-primary) 80%, transparent); }
+.rpp-v-glass-frosted .rpp-item { background: rgba(255,255,255,0.35); border-color: rgba(255,255,255,0.7); }
+.rpp-v-glass-blur .rpp-item { backdrop-filter: blur(20px); background: rgba(255,255,255,0.4); }
+.rpp-v-glass-gradient .rpp-item { background: linear-gradient(135deg, rgba(255,255,255,0.5), rgba(255,255,255,0.2)); border-color: rgba(255,255,255,0.5); }
+.rpp-v-glass-premium .rpp-item { background: rgba(255,255,255,0.5); border-color: rgba(255,255,255,0.8); box-shadow: 0 8px 32px rgba(31,38,135,0.15); }
+.rpp-v-glass-modern .rpp-item { background: rgba(248,250,252,0.6); --rpp-radius: 16px; }
+.rpp-v-glass-floating .rpp-item { background: rgba(255,255,255,0.55); box-shadow: 0 12px 30px rgba(2,6,23,0.18); }
+.rpp-v-glass-interactive .rpp-item:hover:not(:disabled) { transform: translateY(-2px) scale(1.04); }
+/* The per-variant `.rpp-item` backgrounds above out-specify the base `.rpp-active`
+   rule, which would leave the active page translucent-white with white text.
+   Restore the primary fill on the active page for every glass variant. */
+.rpp-v-glass-light .rpp-active,
+.rpp-v-glass-dark .rpp-active,
+.rpp-v-glass-frosted .rpp-active,
+.rpp-v-glass-blur .rpp-active,
+.rpp-v-glass-gradient .rpp-active,
+.rpp-v-glass-premium .rpp-active,
+.rpp-v-glass-modern .rpp-active,
+.rpp-v-glass-floating .rpp-active,
+.rpp-v-glass-interactive .rpp-active {
+  background: var(--rpp-primary);
+  border-color: var(--rpp-primary);
+  color: var(--rpp-on-primary);
+}
+
+/* ---- Soft / Neumorphism collection ---- */
+.rpp-v-soft-light,
+.rpp-v-soft-elevated,
+.rpp-v-soft-flat,
+.rpp-v-soft-gradient,
+.rpp-v-soft-interactive,
+.rpp-v-soft-floating,
+.rpp-v-soft-premium,
+.rpp-v-soft-minimal,
+.rpp-v-soft-luxury {
+  --rpp-surface: #e6e9ef;
+}
+.rpp-v-soft-light .rpp-item,
+.rpp-v-soft-elevated .rpp-item,
+.rpp-v-soft-flat .rpp-item,
+.rpp-v-soft-gradient .rpp-item,
+.rpp-v-soft-interactive .rpp-item,
+.rpp-v-soft-floating .rpp-item,
+.rpp-v-soft-premium .rpp-item,
+.rpp-v-soft-minimal .rpp-item,
+.rpp-v-soft-luxury .rpp-item {
+  border: none;
+  --rpp-radius: 14px;
+  background: #e6e9ef;
+  box-shadow: 6px 6px 12px #c5c8ce, -6px -6px 12px #ffffff;
+}
+.rpp-v-soft-light .rpp-active,
+.rpp-v-soft-elevated .rpp-active,
+.rpp-v-soft-gradient .rpp-active,
+.rpp-v-soft-interactive .rpp-active,
+.rpp-v-soft-floating .rpp-active,
+.rpp-v-soft-premium .rpp-active,
+.rpp-v-soft-minimal .rpp-active,
+.rpp-v-soft-luxury .rpp-active {
+  box-shadow: inset 4px 4px 8px #c5c8ce, inset -4px -4px 8px #ffffff;
+  color: var(--rpp-primary);
+  background: #e6e9ef;
+}
+.rpp-v-soft-dark { --rpp-surface: #2a2d35; --rpp-text: #e2e8f0; }
+.rpp-v-soft-dark .rpp-item { border: none; --rpp-radius: 14px; background: #2a2d35; box-shadow: 6px 6px 12px #1c1e24, -6px -6px 12px #383c46; }
+.rpp-v-soft-dark .rpp-active { box-shadow: inset 4px 4px 8px #1c1e24, inset -4px -4px 8px #383c46; color: color-mix(in srgb, var(--rpp-primary) 80%, white); }
+.rpp-v-soft-flat .rpp-item { box-shadow: 3px 3px 6px #c5c8ce, -3px -3px 6px #ffffff; }
+.rpp-v-soft-floating .rpp-item:hover:not(:disabled) { transform: translateY(-2px); }
+.rpp-v-soft-luxury .rpp-item { --rpp-radius: 999px; }
+
+/* ---- Gradient collection ---- */
+.rpp-v-gradient-blue .rpp-active { background: linear-gradient(135deg,#3b82f6,#1d4ed8); border-color: transparent; }
+.rpp-v-gradient-purple .rpp-active { background: linear-gradient(135deg,#a855f7,#6d28d9); border-color: transparent; }
+.rpp-v-gradient-green .rpp-active { background: linear-gradient(135deg,#4ade80,#15803d); border-color: transparent; }
+.rpp-v-gradient-orange .rpp-active { background: linear-gradient(135deg,#fb923c,#c2410c); border-color: transparent; }
+.rpp-v-gradient-red .rpp-active { background: linear-gradient(135deg,#f87171,#b91c1c); border-color: transparent; }
+.rpp-v-gradient-pink .rpp-active { background: linear-gradient(135deg,#f472b6,#be185d); border-color: transparent; }
+.rpp-v-gradient-indigo .rpp-active { background: linear-gradient(135deg,#818cf8,#3730a3); border-color: transparent; }
+.rpp-v-gradient-cyan .rpp-active { background: linear-gradient(135deg,#22d3ee,#0e7490); border-color: transparent; }
+.rpp-v-gradient-emerald .rpp-active { background: linear-gradient(135deg,#34d399,#047857); border-color: transparent; }
+.rpp-v-gradient-multi .rpp-active { background: linear-gradient(135deg,#6366f1,#ec4899,#f59e0b); border-color: transparent; }
+[class*="rpp-v-gradient-"] .rpp-item { --rpp-radius: 12px; }
+[class*="rpp-v-gradient-"] .rpp-active { color: #fff; box-shadow: 0 8px 20px rgba(0,0,0,0.18); }
+
+/* ---- Professional collection ---- */
+.rpp-v-corporate .rpp-item { --rpp-radius: 4px; border-color: #cbd5e1; }
+.rpp-v-business .rpp-item { --rpp-radius: 6px; background: #f8fafc; }
+.rpp-v-banking .rpp-item { --rpp-radius: 4px; border-color: #1e3a8a33; }
+.rpp-v-banking .rpp-active { background: #1e3a8a; border-color: #1e3a8a; }
+.rpp-v-finance .rpp-item { --rpp-radius: 6px; font-variant-numeric: tabular-nums; }
+.rpp-v-analytics .rpp-item { --rpp-radius: 8px; background: #f1f5f9; border-color: transparent; }
+.rpp-v-crm .rpp-item { --rpp-radius: 8px; }
+.rpp-v-erp .rpp-item { --rpp-radius: 2px; border-color: #94a3b8; }
+.rpp-v-hrms .rpp-item { --rpp-radius: 10px; }
+.rpp-v-pro-admin .rpp-item { --rpp-radius: 8px; background: #0f172a08; border-color: transparent; }
+.rpp-v-pro-enterprise .rpp-item { --rpp-radius: 6px; border-color: #cbd5e1; box-shadow: none; }
+
+/* ---- Premium collection ---- */
+.rpp-v-luxury { --rpp-primary: #b45309; }
+.rpp-v-luxury .rpp-item { --rpp-radius: 12px; border-color: #e7d8b1; background: #fffdf7; }
+.rpp-v-gold { --rpp-primary: #d4af37; --rpp-on-primary: #1a1400; }
+.rpp-v-gold .rpp-active { background: linear-gradient(135deg,#f9e08a,#d4af37); border-color: #d4af37; }
+.rpp-v-platinum { --rpp-primary: #94a3b8; }
+.rpp-v-platinum .rpp-active { background: linear-gradient(135deg,#e2e8f0,#94a3b8); color: #0f172a; border-color: transparent; }
+.rpp-v-diamond .rpp-active { background: linear-gradient(135deg,#a5f3fc,#818cf8); color: #0f172a; border-color: transparent; box-shadow: 0 0 20px rgba(129,140,248,0.5); }
+.rpp-v-executive { --rpp-primary: #0f172a; }
+.rpp-v-executive .rpp-item { --rpp-radius: 4px; border-color: #cbd5e1; }
+.rpp-v-premium-saas .rpp-item { --rpp-radius: 12px; border-color: #e6e9ef; box-shadow: 0 2px 6px rgba(2,6,23,0.06); }
+.rpp-v-premium-dashboard .rpp-item { --rpp-radius: 10px; background: #f8fafc; border-color: transparent; }
+.rpp-v-premium-ecommerce .rpp-item { --rpp-radius: 999px; }
+.rpp-v-premium-agency .rpp-item { --rpp-radius: 16px; font-weight: 600; }
+.rpp-v-premium-portfolio .rpp-item { --rpp-radius: 0; border-width: 0 0 2px 0; box-shadow: none; background: transparent; }
+.rpp-v-premium-portfolio .rpp-active { color: var(--rpp-primary); background: transparent; }
+
+/* ---- Animated collection (visual base; motion via keyframes above) ---- */
+.rpp-v-anim-slide .rpp-page { animation: rpp-slide 0.3s ease both; }
+.rpp-v-anim-fade .rpp-page { animation: rpp-fade 0.35s ease both; }
+.rpp-v-anim-bounce .rpp-page { animation: rpp-bounce 0.45s ease both; }
+.rpp-v-anim-scale .rpp-page { animation: rpp-scale 0.3s ease both; }
+.rpp-v-anim-ripple .rpp-item:active:not(:disabled) { transform: scale(0.9); }
+.rpp-v-anim-wave .rpp-item:hover:not(:disabled) { transform: translateY(-4px); }
+.rpp-v-anim-flip .rpp-page { animation: rpp-flip 0.4s ease both; }
+.rpp-v-anim-rotate .rpp-item:hover:not(:disabled) { transform: rotate(-8deg); }
+.rpp-v-anim-elastic .rpp-item:hover:not(:disabled) { transform: scale(1.18); }
+.rpp-v-anim-pulse .rpp-active { animation: rpp-pulse 1.6s ease-in-out infinite; }
+
+/* ---- Social collection ---- */
+.rpp-v-facebook { --rpp-primary: #1877f2; }
+.rpp-v-facebook .rpp-item { --rpp-radius: 6px; }
+.rpp-v-instagram .rpp-active { background: linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888); border-color: transparent; }
+.rpp-v-instagram .rpp-item { --rpp-radius: 12px; }
+.rpp-v-linkedin { --rpp-primary: #0a66c2; }
+.rpp-v-linkedin .rpp-item { --rpp-radius: 999px; }
+.rpp-v-twitter { --rpp-primary: #1d9bf0; }
+.rpp-v-twitter .rpp-item { --rpp-radius: 999px; }
+.rpp-v-tiktok .rpp-active { background: #010101; border-color: transparent; box-shadow: 2px 2px 0 #25f4ee, -2px -2px 0 #fe2c55; }
+.rpp-v-threads { --rpp-primary: #000000; }
+.rpp-v-threads .rpp-item { --rpp-radius: 999px; }
+.rpp-v-pinterest { --rpp-primary: #e60023; }
+.rpp-v-pinterest .rpp-item { --rpp-radius: 999px; }
+.rpp-v-reddit { --rpp-primary: #ff4500; }
+.rpp-v-reddit .rpp-item { --rpp-radius: 999px; }
+.rpp-v-discord { --rpp-primary: #5865f2; }
+.rpp-v-discord .rpp-item { --rpp-radius: 8px; }
+.rpp-v-community .rpp-item { --rpp-radius: 12px; }
+
+/* ---- Ecommerce collection ---- */
+.rpp-v-amazon { --rpp-primary: #ff9900; --rpp-on-primary: #131921; }
+.rpp-v-amazon .rpp-item { --rpp-radius: 8px; border-color: #d5d9d9; }
+.rpp-v-flipkart { --rpp-primary: #2874f0; }
+.rpp-v-flipkart .rpp-item { --rpp-radius: 2px; }
+.rpp-v-shopify { --rpp-primary: #008060; }
+.rpp-v-shopify .rpp-item { --rpp-radius: 8px; }
+.rpp-v-woocommerce { --rpp-primary: #7f54b3; }
+.rpp-v-woocommerce .rpp-item { --rpp-radius: 6px; }
+.rpp-v-marketplace .rpp-item { --rpp-radius: 10px; border-color: #e6e9ef; }
+.rpp-v-product-grid .rpp-item { --rpp-radius: 8px; background: #fafafa; }
+.rpp-v-product-card .rpp-item { --rpp-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+.rpp-v-catalog .rpp-item { --rpp-radius: 4px; border-color: #e5e7eb; }
+.rpp-v-storefront .rpp-item { --rpp-radius: 999px; border-color: #e5e7eb; }
+.rpp-v-mobile-store .rpp-item { --rpp-radius: 12px; --rpp-size: 44px; }
+
+/* ---- Mobile collection ---- */
+.rpp-v-mobile-bottom .rpp-item { --rpp-radius: 12px; --rpp-size: 44px; }
+.rpp-v-mobile-floating .rpp-item { --rpp-radius: 999px; box-shadow: 0 8px 24px rgba(2,6,23,0.2); }
+.rpp-v-mobile-sticky .rpp-item { --rpp-radius: 10px; --rpp-size: 42px; }
+.rpp-v-mobile-swipe .rpp-item { --rpp-radius: 999px; }
+.rpp-v-mobile-compact { --rpp-gap: 3px; }
+.rpp-v-mobile-compact .rpp-item { --rpp-size: 32px; padding: 0 6px; }
+.rpp-v-mobile-app .rpp-item { --rpp-radius: 14px; --rpp-size: 46px; font-weight: 600; }
+.rpp-v-mobile-gesture .rpp-item { --rpp-radius: 999px; --rpp-size: 46px; }
+.rpp-v-mobile-onehand .rpp-item { --rpp-radius: 999px; --rpp-size: 48px; }
+.rpp-v-mobile-fab .rpp-active { border-radius: 999px; box-shadow: 0 8px 20px color-mix(in srgb, var(--rpp-primary) 45%, transparent); }
+.rpp-v-mobile-premium .rpp-item { --rpp-radius: 16px; --rpp-size: 46px; box-shadow: 0 4px 14px rgba(2,6,23,0.1); }
+
+/* ---- Table collection (data-grid footer bars) ---- */
+.rpp-v-table-footer { --rpp-primary: #6366f1; }
+.rpp-v-table-footer .rpp-item { box-shadow: none; border-color: #e9ecf3; --rpp-radius: 8px; }
+.rpp-v-table-minimal { border-top: none; }
+.rpp-v-table-minimal .rpp-item,
+.rpp-v-table-minimal .rpp-select-btn,
+.rpp-v-table-minimal .rpp-pagebox { border-color: transparent; box-shadow: none; background: transparent; }
+.rpp-v-table-minimal .rpp-item:hover:not(:disabled) { background: var(--rpp-surface-hover); }
+.rpp-v-table-bordered { border: 1px solid var(--rpp-border); border-radius: 10px; }
+.rpp-v-table-bordered .rpp-item { box-shadow: none; }
+.rpp-v-table-card { border: 1px solid #edf0f5; border-radius: 14px; box-shadow: 0 4px 16px rgba(2, 6, 23, 0.06); }
+.rpp-v-table-card .rpp-item { box-shadow: none; border-color: #edf0f5; --rpp-radius: 10px; }
+.rpp-v-table-mui { border-top: 1px solid rgba(0, 0, 0, 0.12); font-family: Roboto, ui-sans-serif, system-ui, sans-serif; }
+.rpp-v-table-mui .rpp-item,
+.rpp-v-table-mui .rpp-pagebox { border-color: transparent; background: transparent; box-shadow: none; }
+.rpp-v-table-mui .rpp-item:hover:not(:disabled) { background: rgba(0, 0, 0, 0.06); border-radius: 999px; }
+.rpp-v-table-mui .rpp-nav { border-radius: 999px; }
+.rpp-v-table-antd { --rpp-primary: #1677ff; }
+.rpp-v-table-antd .rpp-item,
+.rpp-v-table-antd .rpp-select-btn,
+.rpp-v-table-antd .rpp-pagebox { --rpp-radius: 6px; border-radius: 6px; box-shadow: none; border-color: #d9d9d9; }
+.rpp-v-table-dense { padding: 4px 8px; }
+.rpp-v-table-dense .rpp-nav { --rpp-size: 26px; }
+.rpp-v-table-dense .rpp-select-btn { height: 26px; }
+.rpp-v-table-dense .rpp-pagebox { padding: 2px 8px 2px 2px; }
+.rpp-v-table-modern { --rpp-primary: #7c3aed; background: #fafbfe; border-top: none; border-radius: 12px; }
+.rpp-v-table-modern .rpp-item,
+.rpp-v-table-modern .rpp-select-btn,
+.rpp-v-table-modern .rpp-pagebox { border-color: transparent; background: #fff; box-shadow: 0 1px 3px rgba(2, 6, 23, 0.08); --rpp-radius: 10px; }
+.rpp-v-table-striped { background: #f8fafc; }
+.rpp-v-table-striped .rpp-item { box-shadow: none; }
+.rpp-v-table-dark { --rpp-surface: #0f172a; --rpp-surface-hover: #1e293b; --rpp-text: #e2e8f0; --rpp-muted: #64748b; --rpp-border: #1e293b; }
+.rpp-v-table-dark .rpp-item { box-shadow: none; }
+.rpp-v-table-dark .rpp-select-btn,
+.rpp-v-table-dark .rpp-pagebox { background: #0f172a; color: #e2e8f0; }
+.rpp-v-table-dark .rpp-select-list { background: #0f172a; box-shadow: 0 10px 28px rgba(0, 0, 0, 0.5); }
+
+/* ---- Creative collection ---- */
+/* Segmented: buttons joined into one bar (classic bootstrap style). */
+.rpp-v-segmented .rpp-list { gap: 0; }
+.rpp-v-segmented .rpp-item { border-radius: 0; box-shadow: none; }
+.rpp-v-segmented li:not(:first-child) .rpp-item { margin-inline-start: -1px; }
+.rpp-v-segmented li:first-child .rpp-item { border-start-start-radius: 8px; border-end-start-radius: 8px; }
+.rpp-v-segmented li:last-child .rpp-item { border-start-end-radius: 8px; border-end-end-radius: 8px; }
+.rpp-v-segmented .rpp-active { position: relative; z-index: 1; }
+
+/* Underline: text-only tabs with an active underline. */
+.rpp-v-underline .rpp-item { background: transparent; border: none; border-bottom: 2px solid transparent; border-radius: 0; box-shadow: none; }
+.rpp-v-underline .rpp-item:hover:not(:disabled) { background: transparent; color: var(--rpp-primary); }
+.rpp-v-underline .rpp-active { background: transparent; color: var(--rpp-primary); border-bottom-color: var(--rpp-primary); animation: none; }
+
+/* Brutalist: hard borders, hard offset shadow. */
+.rpp-v-brutalist .rpp-item { border: 2px solid #0f172a; border-radius: 0; box-shadow: 3px 3px 0 #0f172a; font-weight: 700; }
+.rpp-v-brutalist .rpp-item:hover:not(:disabled) { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 #0f172a; border-color: #0f172a; }
+.rpp-v-brutalist .rpp-item:active:not(:disabled) { transform: translate(2px, 2px); box-shadow: 1px 1px 0 #0f172a; }
+.rpp-v-brutalist .rpp-active { background: var(--rpp-primary); border-color: #0f172a; }
+
+/* Neon: dark chips with a glowing active page. */
+.rpp-v-neon { --rpp-surface: #0b1120; --rpp-surface-hover: #16203a; --rpp-text: #94a3b8; --rpp-border: #1e293b; }
+.rpp-v-neon .rpp-item { box-shadow: none; --rpp-radius: 10px; }
+.rpp-v-neon .rpp-active { background: transparent; color: var(--rpp-primary); border-color: var(--rpp-primary); box-shadow: 0 0 10px color-mix(in srgb, var(--rpp-primary) 70%, transparent), inset 0 0 8px color-mix(in srgb, var(--rpp-primary) 30%, transparent); text-shadow: 0 0 8px color-mix(in srgb, var(--rpp-primary) 80%, transparent); }
+
+/* Retro: chunky monospace pixels. */
+.rpp-v-retro .rpp-item { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; border: 2px solid #0f172a; border-radius: 0; box-shadow: inset -2px -2px 0 rgba(15, 23, 42, 0.25); background: #fdf6e3; }
+.rpp-v-retro .rpp-active { background: #0f172a; color: #fdf6e3; border-color: #0f172a; box-shadow: none; }
+
+/* Terminal: green-on-black console. */
+.rpp-v-terminal { --rpp-surface: #020a02; --rpp-surface-hover: #06280d; --rpp-text: #22c55e; --rpp-muted: #14532d; --rpp-border: #14532d; }
+.rpp-v-terminal .rpp-item { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; border-radius: 0; box-shadow: none; }
+.rpp-v-terminal .rpp-item:hover:not(:disabled) { border-color: #22c55e; }
+.rpp-v-terminal .rpp-active { background: #22c55e; color: #020a02; border-color: #22c55e; box-shadow: 0 0 12px rgba(34, 197, 94, 0.5); }
+
+/* Candy: playful pastel pills. */
+.rpp-v-candy .rpp-item { --rpp-radius: 999px; border: none; box-shadow: none; background: linear-gradient(180deg, #fdf2f8, #fce7f3); color: #9d174d; font-weight: 700; }
+.rpp-v-candy .rpp-item:hover:not(:disabled) { background: #fbcfe8; }
+.rpp-v-candy .rpp-active { background: linear-gradient(135deg, #ec4899, #a855f7); color: #fff; box-shadow: 0 6px 16px rgba(236, 72, 153, 0.4); }
+
+/* Bubble: soft tinted circles that inflate on hover. */
+.rpp-v-bubble .rpp-item { --rpp-radius: 999px; border: none; box-shadow: none; background: color-mix(in srgb, var(--rpp-primary) 8%, transparent); color: var(--rpp-primary); }
+.rpp-v-bubble .rpp-item:hover:not(:disabled) { background: color-mix(in srgb, var(--rpp-primary) 16%, transparent); transform: scale(1.1); }
+.rpp-v-bubble .rpp-active { background: var(--rpp-primary); color: var(--rpp-on-primary); box-shadow: 0 6px 14px color-mix(in srgb, var(--rpp-primary) 40%, transparent); }
+
+/* Outline dashed: sketchy dashed borders. */
+.rpp-v-outline-dashed .rpp-item { background: transparent; border: 1.5px dashed var(--rpp-border); box-shadow: none; --rpp-radius: 10px; }
+.rpp-v-outline-dashed .rpp-item:hover:not(:disabled) { border-style: solid; }
+.rpp-v-outline-dashed .rpp-active { border: 1.5px solid var(--rpp-primary); }
+
+/* Sketch: hand-drawn wobbly outline. */
+.rpp-v-sketch .rpp-item { background: #fffef9; border: 2px solid #334155; box-shadow: none; border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px; }
+.rpp-v-sketch li:nth-child(even) .rpp-item { border-radius: 15px 225px 15px 255px / 255px 15px 225px 15px; }
+.rpp-v-sketch .rpp-active { background: var(--rpp-primary); border-color: #334155; }
+
+/* ---- Active-page fill fixes ----
+   These variants set a light `.rpp-item` background at a higher specificity than
+   the base `.rpp-active` rule, which otherwise left the active page as an
+   (invisible) white number on a light button. Restore the primary fill so the
+   current page is always readable. */
+.rpp-v-minimal-flat .rpp-active,
+.rpp-v-dashboard .rpp-active,
+.rpp-v-enterprise .rpp-active,
+.rpp-v-admin .rpp-active,
+.rpp-v-business .rpp-active,
+.rpp-v-analytics .rpp-active,
+.rpp-v-pro-admin .rpp-active,
+.rpp-v-luxury .rpp-active,
+.rpp-v-premium-dashboard .rpp-active,
+.rpp-v-product-grid .rpp-active {
+  background: var(--rpp-primary);
+  border-color: var(--rpp-primary);
+  color: var(--rpp-on-primary);
+}
+/* Outline style stays hollow — just make the active number the primary color. */
+.rpp-v-outline-dashed .rpp-active {
+  color: var(--rpp-primary);
+}
+
+/* ---- Dark mode overrides for light-background variants ---- */
+/* Soft collection - override surface colors and inverted neumorphism for dark mode */
+.rpp-dark.rpp-v-soft-light,
+.rpp-dark.rpp-v-soft-elevated,
+.rpp-dark.rpp-v-soft-flat,
+.rpp-dark.rpp-v-soft-gradient,
+.rpp-dark.rpp-v-soft-interactive,
+.rpp-dark.rpp-v-soft-floating,
+.rpp-dark.rpp-v-soft-premium,
+.rpp-dark.rpp-v-soft-luxury,
+.rpp-dark.rpp-v-soft-minimal {
+  --rpp-surface: #1e293b;
+  --rpp-surface-hover: #334155;
+}
+
+.rpp-dark.rpp-v-soft-light .rpp-item,
+.rpp-dark.rpp-v-soft-elevated .rpp-item,
+.rpp-dark.rpp-v-soft-flat .rpp-item,
+.rpp-dark.rpp-v-soft-gradient .rpp-item,
+.rpp-dark.rpp-v-soft-interactive .rpp-item,
+.rpp-dark.rpp-v-soft-floating .rpp-item,
+.rpp-dark.rpp-v-soft-premium .rpp-item,
+.rpp-dark.rpp-v-soft-luxury .rpp-item,
+.rpp-dark.rpp-v-soft-minimal .rpp-item {
+  background: var(--rpp-surface);
+  box-shadow: 6px 6px 12px #0f1419, -6px -6px 12px #2a3447;
+  color: var(--rpp-text);
+}
+
+.rpp-dark.rpp-v-soft-light .rpp-active,
+.rpp-dark.rpp-v-soft-elevated .rpp-active,
+.rpp-dark.rpp-v-soft-flat .rpp-active,
+.rpp-dark.rpp-v-soft-gradient .rpp-active,
+.rpp-dark.rpp-v-soft-interactive .rpp-active,
+.rpp-dark.rpp-v-soft-floating .rpp-active,
+.rpp-dark.rpp-v-soft-premium .rpp-active,
+.rpp-dark.rpp-v-soft-luxury .rpp-active,
+.rpp-dark.rpp-v-soft-minimal .rpp-active {
+  background: var(--rpp-primary);
+  box-shadow: inset 4px 4px 8px #0f1419, inset -4px -4px 8px #2a3447;
+  color: var(--rpp-on-primary);
+}
+
+/* Professional collection */
+.rpp-dark.rpp-v-business .rpp-item,
+.rpp-dark.rpp-v-analytics .rpp-item,
+.rpp-dark.rpp-v-premium-dashboard .rpp-item { background: var(--rpp-surface); }
+
+/* Premium collection */
+.rpp-dark.rpp-v-luxury .rpp-item { background: var(--rpp-surface); border-color: var(--rpp-border); }
+
+/* Ecommerce collection */
+.rpp-dark.rpp-v-product-grid .rpp-item { background: var(--rpp-surface); }
+
+/* Table collection */
+.rpp-dark.rpp-v-table-striped { background: var(--rpp-surface); }
+.rpp-dark.rpp-v-table-modern { background: var(--rpp-surface); }
+.rpp-dark.rpp-v-table-modern .rpp-item,
+.rpp-dark.rpp-v-table-modern .rpp-select-btn,
+.rpp-dark.rpp-v-table-modern .rpp-pagebox { background: var(--rpp-surface); box-shadow: none; }
+
+/* Creative collection */
+.rpp-dark.rpp-v-candy .rpp-item { background: var(--rpp-surface); color: var(--rpp-text); }
+.rpp-dark.rpp-v-retro .rpp-item { background: var(--rpp-surface); color: var(--rpp-text); border-color: var(--rpp-text); }
+.rpp-dark.rpp-v-sketch .rpp-item { background: var(--rpp-surface); border-color: var(--rpp-text); }
+
+/* ============================================================
+   Bar / toolbar footer pagination (<BarPagination />)
+   ============================================================ */
+.rpp-bar {
+  display: block;
+  width: 100%;
+  /* Watch the bar's own width so it can rewrap on narrow containers. */
+  container-type: inline-size;
+}
+.rpp-bar-inner {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+/* Clusters */
+.rpp-bar-start,
+.rpp-bar-end,
+.rpp-bar-main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.rpp-bar-main { flex: 0 1 auto; }
+
+/* Layouts: control where the numbered pages sit. */
+.rpp-bar-split .rpp-bar-inner { justify-content: space-between; }
+/* spread: three groups pushed to the edges + centre. */
+.rpp-bar-spread .rpp-bar-inner { justify-content: space-between; }
+.rpp-bar-spread .rpp-bar-main { margin-inline: auto; }
+.rpp-bar-center .rpp-bar-inner { justify-content: center; }
+.rpp-bar-end .rpp-bar-inner { justify-content: flex-end; }
+
+/* Summary text */
+.rpp-bar-total {
+  color: var(--rpp-muted);
+  font-size: calc(var(--rpp-font-size) - 1px);
+  white-space: nowrap;
+}
+
+/* The pages list inside a bar shouldn't wrap the summary awkwardly. */
+.rpp-bar .rpp-list { flex-wrap: wrap; }
+
+/* Labelled Prev/Next buttons ("‹ Previous", "Next ›"). */
+.rpp-nav-labelled {
+  width: auto;
+  padding: 0 14px;
+  gap: 6px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Go-to-page control */
+.rpp-goto {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+.rpp-goto-label {
+  color: var(--rpp-muted);
+  font-size: calc(var(--rpp-font-size) - 1px);
+}
+.rpp-goto-input {
+  width: 52px;
+  height: var(--rpp-size);
+  padding: 0 8px;
+  text-align: center;
+  font: inherit;
+  font-size: var(--rpp-font-size);
+  color: var(--rpp-text);
+  background: var(--rpp-surface);
+  border: 1px solid var(--rpp-border);
+  border-radius: var(--rpp-shape-radius, var(--rpp-radius, 8px));
+  outline: none;
+  box-sizing: border-box;
+}
+.rpp-goto-input:focus-visible {
+  border-color: var(--rpp-primary);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--rpp-primary) 25%, transparent);
+}
+.rpp-goto-btn {
+  width: auto;
+  padding: 0 16px;
+  background: var(--rpp-primary);
+  color: var(--rpp-on-primary);
+  border-color: var(--rpp-primary);
+  font-weight: 600;
+}
+.rpp-goto-btn:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--rpp-primary) 85%, black);
+  color: var(--rpp-on-primary);
+  border-color: transparent;
+}
+
+/* ---- Bar style variants ---- */
+/* Clean: a soft card with a subtle shadow (the default). */
+.rpp-v-bar-clean {
+  padding: 10px 14px;
+  background: var(--rpp-surface);
+  border: 1px solid color-mix(in srgb, var(--rpp-border) 60%, transparent);
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(2, 6, 23, 0.06);
+}
+.rpp-v-bar-clean .rpp-item { box-shadow: none; }
+
+/* Bordered: crisp outline, square-ish page chips. */
+.rpp-v-bar-bordered {
+  padding: 8px 12px;
+  border: 1px solid var(--rpp-border);
+  border-radius: 10px;
+}
+.rpp-v-bar-bordered .rpp-item { box-shadow: none; --rpp-radius: 6px; }
+
+/* Pill: fully-rounded container and circular controls. */
+.rpp-v-bar-pill {
+  padding: 8px 12px;
+  background: var(--rpp-surface);
+  border: 1px solid color-mix(in srgb, var(--rpp-border) 60%, transparent);
+  border-radius: 999px;
+  box-shadow: 0 4px 14px rgba(2, 6, 23, 0.08);
+}
+.rpp-v-bar-pill .rpp-item { --rpp-radius: 999px; box-shadow: none; }
+.rpp-v-bar-pill .rpp-goto-input { border-radius: 999px; }
+.rpp-v-bar-pill .rpp-goto-btn { border-radius: 999px; }
+.rpp-v-bar-pill .rpp-select-btn { border-radius: 999px; }
+
+/* Minimal: no container chrome, borderless chips. */
+.rpp-v-bar-minimal .rpp-item {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+.rpp-v-bar-minimal .rpp-item:hover:not(:disabled):not(.rpp-active) {
+  background: var(--rpp-surface-hover);
+}
+
+/* Soft: neumorphic bar. */
+.rpp-v-bar-soft {
+  padding: 12px 16px;
+  background: #eef1f6;
+  border-radius: 16px;
+  box-shadow: inset 2px 2px 6px #d3d8e2, inset -2px -2px 6px #ffffff;
+}
+.rpp-v-bar-soft .rpp-item {
+  border: none;
+  background: #eef1f6;
+  box-shadow: 3px 3px 6px #d3d8e2, -3px -3px 6px #ffffff;
+}
+.rpp-v-bar-soft .rpp-active { color: var(--rpp-on-primary); background: var(--rpp-primary); }
+.rpp-v-bar-soft .rpp-goto-input { background: #eef1f6; border: none; box-shadow: inset 2px 2px 4px #d3d8e2, inset -2px -2px 4px #ffffff; }
+
+/* Dark: always-dark bar regardless of theme. */
+.rpp-v-bar-dark {
+  --rpp-surface: #0f172a;
+  --rpp-surface-hover: #1e293b;
+  --rpp-text: #e2e8f0;
+  --rpp-muted: #94a3b8;
+  --rpp-border: #1e293b;
+  padding: 10px 14px;
+  background: #0f172a;
+  border-radius: 12px;
+}
+.rpp-v-bar-dark .rpp-item { box-shadow: none; }
+
+/* Dark-mode surfaces for the neumorphic soft bar. */
+.rpp-dark.rpp-v-bar-soft {
+  background: #1e293b;
+  box-shadow: inset 2px 2px 6px #0f1419, inset -2px -2px 6px #2a3447;
+}
+.rpp-dark.rpp-v-bar-soft .rpp-item {
+  background: #1e293b;
+  box-shadow: 3px 3px 6px #0f1419, -3px -3px 6px #2a3447;
+}
+.rpp-dark.rpp-v-bar-soft .rpp-goto-input {
+  background: #1e293b;
+  box-shadow: inset 2px 2px 4px #0f1419, inset -2px -2px 4px #2a3447;
+}
+
+/* Responsive: stack the clusters and centre everything on a narrow bar. */
+@container (max-width: 520px) {
+  .rpp-bar-inner {
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+  .rpp-bar-spread .rpp-bar-main { margin-inline: 0; }
+}
+/* Fallback for browsers without container queries. */
+@supports not (container-type: inline-size) {
+  @media (max-width: 560px) {
+    .rpp-bar-inner { flex-direction: column; align-items: center; gap: 12px; }
+  }
+}

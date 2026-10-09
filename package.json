@@ -1,0 +1,69 @@
+{
+  "name": "react-next-pagination-pro",
+  "version": "0.1.0",
+  "description": "The ultimate all-in-one React pagination package: 130+ UI variants, hooks, ellipsis logic, cursor/load-more/infinite, a11y, auto dark mode, RTL, TypeScript.",
+  "keywords": [
+    "react",
+    "pagination",
+    "paginate",
+    "react-pagination",
+    "nextjs",
+    "vite",
+    "hooks",
+    "typescript",
+    "cursor-pagination",
+    "infinite-scroll",
+    "load-more",
+    "accessible",
+    "a11y"
+  ],
+  "license": "MIT",
+  "author": "Yogesh Gabani",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./styles.css": "./dist/styles.css"
+  },
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "demo": "vite",
+    "demo:build": "vite build"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
+  },
+  "devDependencies": {
+    "@testing-library/react": "^16.0.0",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "jsdom": "^24.1.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "tsup": "^8.1.0",
+    "typescript": "^5.5.3",
+    "vite": "^8.3.4",
+    "vitest": "^5.0.3"
+  },
+  "overrides": {
+    "esbuild": "^0.28.2"
+  }
+}
