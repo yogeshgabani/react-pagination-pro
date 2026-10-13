@@ -1,6 +1,6 @@
 {
   "name": "react-next-pagination-pro",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "The ultimate all-in-one React pagination package: 130+ UI variants, hooks, ellipsis logic, cursor/load-more/infinite, a11y, auto dark mode, RTL, TypeScript.",
   "keywords": [
     "react",
@@ -19,6 +19,14 @@
   ],
   "license": "MIT",
   "author": "Yogesh Gabani",
+  "homepage": "https://rreact-pagination.netlify.app/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yogeshgabani/react-pagination-pro.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yogeshgabani/react-pagination-pro/issues"
+  },
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",

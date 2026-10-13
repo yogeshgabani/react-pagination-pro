@@ -1,6 +1,8 @@
 # react-next-pagination-pro
 
-> The ultimate all-in-one React pagination package — **110+ UI variants**, headless hooks, cursor / load-more / URL-sync, full keyboard & ARIA accessibility, dark mode, RTL, and first-class TypeScript. Works with React 18/19, Next.js (App & Pages Router), Vite, CRA, Remix, Gatsby — SSR & CSR.
+**[Live demo](https://rreact-pagination.netlify.app/)** · [npm](https://www.npmjs.com/package/react-next-pagination-pro) · [GitHub](https://github.com/yogeshgabani/react-pagination-pro)
+
+> The ultimate all-in-one React pagination package — **130+ UI variants**, headless hooks, cursor / load-more / URL-sync, full keyboard & ARIA accessibility, dark mode, RTL, and first-class TypeScript. Works with React 18/19, Next.js (App & Pages Router), Vite, CRA, Remix, Gatsby — SSR & CSR.
 
 ## Install
 
@@ -94,9 +96,10 @@ const { items, startItem, endItem } = usePagination({
 });
 ```
 
-## 110+ variants
+## 130+ variants
 
-Every variant is a CSS class you select with the `variant` prop. Grouped into
+Every variant is a CSS class you select with the `variant` prop — preview them all
+in the [live demo](https://rreact-pagination.netlify.app/). Grouped into
 collections — import `VARIANT_COLLECTIONS` / `PAGINATION_VARIANTS` to enumerate them:
 
 `minimal` · `modern` (material, fluent, apple…) · `glass` · `soft` (neumorphism) ·
@@ -129,7 +132,7 @@ Presets **and** runtime token overrides:
 **Zero config — it just works.** By default (`dark="auto"`) every component reads
 the visitor's `prefers-color-scheme` and renders light or dark to match their OS,
 switching live if they change their system theme. This is exactly what you see in
-the demo, and what you'll get on install:
+the [live demo](https://rreact-pagination.netlify.app/), and what you'll get on install:
 
 ```tsx
 <Pagination currentPage={page} totalPages={50} onPageChange={setPage} />
@@ -170,6 +173,9 @@ const { page, setPage } = useUrlPagination({
 ```
 
 ## Live demo
+
+**https://rreact-pagination.netlify.app/** — every component and all variants,
+in light & dark. To run it locally:
 
 ```bash
 npm install
