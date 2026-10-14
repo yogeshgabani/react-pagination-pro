@@ -606,6 +606,14 @@ body {
   .site-links button:not(.theme-toggle) { width: 36px; height: 36px; padding: 0; justify-content: center; }
   .site-link-label { display: none; }
   .theme-toggle { width: 36px; height: 36px; margin-left: 0; }
+  /* One swipeable row of section tabs: wrapped, the sticky bar grew to ~6 rows
+     and covered a third of the screen. */
+  .tabs-sticky {
+    flex-wrap: nowrap; justify-content: flex-start; overflow-x: auto;
+    padding: 8px; scrollbar-width: none; overscroll-behavior-x: contain;
+  }
+  .tabs-sticky::-webkit-scrollbar { display: none; }
+  .tabs-sticky .tab { flex: none; }
   .card { padding: 18px; border-radius: 16px; }
   .modal { padding: 18px; border-radius: 16px; }
   .hero-cta { flex-direction: column; }
@@ -634,3 +642,32 @@ body {
   /* Fits the full name at 320px; the ellipsis still covers wider fonts. */
   .brand-name { font-size: 13px; }
 }
+
+/* ============================ New-feature demos ============================ */
+/* A card that spans every column of .grid2 (the A–Z bar needs the width). */
+.card-wide { grid-column: 1 / -1; }
+
+/* Infinite feed: scrolls inside its own box, which is the observer root. */
+.feed-box {
+  width: 100%; max-width: 420px; height: 280px; overflow-y: auto;
+  padding: 2px; border-radius: 12px; overscroll-behavior: contain;
+}
+.text-btn {
+  padding: 0; border: 0; background: none; font: inherit; color: var(--brand);
+  cursor: pointer; text-decoration: underline; text-underline-offset: 2px;
+}
+
+/* Dots: a faux carousel slide + one labelled row per effect. */
+.slide {
+  display: flex; align-items: center; justify-content: center;
+  width: 100%; max-width: 360px; aspect-ratio: 16 / 7; border-radius: 14px;
+  color: #fff; font-weight: 700; font-size: 18px; letter-spacing: -0.01em;
+  transition: background 0.35s ease;
+}
+.dots-rows { display: grid; gap: 4px; }
+.dots-row { display: grid; grid-template-columns: 74px auto; align-items: center; gap: 8px; }
+.dots-row code { font-size: 12px; color: var(--sub); text-align: right; }
+
+/* A–Z results as wrapping chips rather than a tall list. */
+.items.chips { display: flex; flex-wrap: wrap; justify-content: center; max-width: 640px; }
+.items.chips li { padding: 6px 12px; border-radius: 999px; font-size: 13px; }

@@ -7,6 +7,9 @@ import {
   CursorPagination,
   TablePagination,
   BarPagination,
+  InfiniteScroll,
+  DotsPagination,
+  AlphabetPagination,
   usePagination,
   useLoadMore,
   useCursorPagination,
@@ -18,8 +21,10 @@ import {
   type PaginationSize,
   type PaginationShape,
   type PaginationAnimation,
+  type DotsEffect,
 } from "react-next-pagination-pro";
 import "react-next-pagination-pro/styles.css";
+import { version } from "../../package.json";
 import { SiteFooter } from "./SiteFooter";
 import { BrandIcon } from "./BrandIcon";
 import { ComingSoonProvider, LINKS, SiteLink } from "./links";
@@ -206,16 +211,19 @@ function Section({
   title,
   desc,
   code,
+  wide,
   children,
 }: {
   title: string;
   desc?: string;
   /** Optional usage snippet rendered below the demo with a copy button. */
   code?: string;
+  /** Span the full row inside a `.grid2`. */
+  wide?: boolean;
   children: React.ReactNode;
 }) {
   return (
-    <div className="card">
+    <div className={wide ? "card card-wide" : "card"}>
       <h2>{title}</h2>
       {desc && <p className="desc">{desc}</p>}
       {children}
@@ -593,6 +601,186 @@ function HookDemo() {
         </code>
         <div className="count">Showing items {startItem}–{endItem} of 235 · {totalPages} pages</div>
         <input type="range" min={1} max={totalPages} value={page} onChange={(e) => setPage(+e.target.value)} style={{ width: 260 }} />
+      </div>
+    </Section>
+  );
+}
+
+// Fake paged API for the infinite feed: 60 posts, 400ms latency.
+const FEED = Array.from({ length: 60 }, (_, i) => `Post #${i + 1}`);
+const fetchPosts = (offset: number, size: number) =>
+  new Promise<string[]>((res) => setTimeout(() => res(FEED.slice(offset, offset + size)), 400));
+
+function InfiniteDemo() {
+  const dark = useContext(DarkCtx);
+  // The feed scrolls inside its own box, so that box is the observer's root.
+  const [box, setBox] = useState<HTMLDivElement | null>(null);
+  const { visible, hasMore, loading, loadMore, reset } = useLoadMore({
+    fetchMore: fetchPosts,
+    total: FEED.length,
+    pageSize: 8,
+  });
+  return (
+    <Section
+      title="♾️ Infinite scroll"
+      desc="Scroll the feed — the next batch loads before you reach the bottom. IntersectionObserver-based, with loading, retry and end states."
+      code={`const { visible, hasMore, loading, loadMore } =
+  useLoadMore({ fetchMore: fetchPosts, total: 60, pageSize: 8 });
+
+<ul>{visible.map((post) => <li key={post.id}>…</li>)}</ul>
+<InfiniteScroll
+  hasMore={hasMore}
+  loading={loading}
+  onLoadMore={loadMore}
+/>`}
+    >
+      <div className="stage" style={{ flexDirection: "column", gap: 10 }}>
+        <div ref={setBox} className="feed-box">
+          <ul className="items">
+            {visible.map((it) => <li key={it}>{it}</li>)}
+          </ul>
+          <InfiniteScroll
+            root={box}
+            rootMargin="0px 0px 120px 0px"
+            hasMore={hasMore}
+            loading={loading}
+            onLoadMore={loadMore}
+            color="purple"
+            dark={dark}
+          />
+        </div>
+        <div className="count">
+          {visible.length} of {FEED.length} loaded ·{" "}
+          <button
+            type="button"
+            className="text-btn"
+            onClick={() => {
+              box?.scrollTo({ top: 0 });
+              reset();
+            }}
+          >
+            Start over
+          </button>
+        </div>
+      </div>
+    </Section>
+  );
+}
+
+const SLIDE_COLORS = ["#6366f1", "#ec4899", "#f59e0b", "#10b981", "#06b6d4", "#8b5cf6"];
+const DOT_EFFECTS: DotsEffect[] = ["scale", "slide", "line"];
+
+function DotsDemo() {
+  const dark = useContext(DarkCtx);
+  const [slide, setSlide] = useState(1);
+  const [story, setStory] = useState(9);
+  const hue = SLIDE_COLORS[slide - 1];
+  return (
+    <Section
+      title="⚪ Dots (carousel)"
+      desc="Carousel, slider & onboarding dots with four effects. Long ranges become an Instagram-style window whose edge dots shrink."
+      code={`<DotsPagination
+  currentPage={slide}
+  totalPages={6}
+  onPageChange={setSlide}
+  effect="expand"   // expand | scale | slide | line
+  showPrevNext
+/>
+
+// 30 pages → a sliding window of 7 dots
+<DotsPagination currentPage={page} totalPages={30} maxDots={7} … />`}
+    >
+      <div className="stage" style={{ flexDirection: "column", gap: 14 }}>
+        <div className="slide" style={{ background: `linear-gradient(135deg, ${hue}, color-mix(in srgb, ${hue} 55%, #0f172a))` }}>
+          Slide {slide} / {SLIDE_COLORS.length}
+        </div>
+        <DotsPagination
+          currentPage={slide}
+          totalPages={SLIDE_COLORS.length}
+          onPageChange={setSlide}
+          effect="expand"
+          showPrevNext
+          color="indigo"
+          dark={dark}
+          ariaLabel="Slides"
+        />
+        <div className="dots-rows">
+          {DOT_EFFECTS.map((effect) => (
+            <div key={effect} className="dots-row">
+              <code>{effect}</code>
+              <DotsPagination
+                currentPage={slide}
+                totalPages={SLIDE_COLORS.length}
+                onPageChange={setSlide}
+                effect={effect}
+                color="indigo"
+                dark={dark}
+                ariaLabel={`Slides (${effect})`}
+              />
+            </div>
+          ))}
+          <div className="dots-row">
+            <code>30 pages</code>
+            <DotsPagination
+              currentPage={story}
+              totalPages={30}
+              onPageChange={setStory}
+              color="pink"
+              dark={dark}
+              ariaLabel="Stories"
+            />
+          </div>
+        </div>
+      </div>
+    </Section>
+  );
+}
+
+const FRUITS = [
+  "Apple", "Apricot", "Banana", "Blueberry", "Cherry", "Coconut", "Date", "Dragon fruit",
+  "Elderberry", "Fig", "Grape", "Guava", "Honeydew", "Jackfruit", "Kiwi", "Lemon", "Lime",
+  "Mango", "Melon", "Nectarine", "Orange", "Papaya", "Peach", "Pear", "Pineapple", "Plum",
+  "Raspberry", "Strawberry", "Tangerine", "Watermelon",
+];
+const FRUIT_LETTERS = [...new Set(FRUITS.map((f) => f[0]))];
+
+function AlphabetDemo() {
+  const dark = useContext(DarkCtx);
+  const [letter, setLetter] = useState<string | null>("P");
+  const shown = letter ? FRUITS.filter((f) => f.startsWith(letter)) : FRUITS;
+  return (
+    <Section
+      wide
+      title="🔤 A–Z index"
+      desc="Alphabetical navigation for directories, glossaries and contacts. Empty letters are disabled — and you can type a letter to jump to it. Works with every variant."
+      code={`const letters = [...new Set(items.map((i) => i.name[0]))];
+
+<AlphabetPagination
+  value={letter}          // null = "All"
+  onChange={setLetter}
+  available={letters}     // the rest render disabled
+  showAll
+  size="sm"
+  variant="minimal-outline"
+/>`}
+    >
+      <div className="stage" style={{ flexDirection: "column", gap: 12 }}>
+        <AlphabetPagination
+          value={letter}
+          onChange={setLetter}
+          available={FRUIT_LETTERS}
+          showAll
+          size="sm"
+          variant="minimal-outline"
+          color="emerald"
+          dark={dark}
+        />
+        <div className="count">
+          {shown.length} {letter ? `starting with “${letter}”` : "fruits"}
+        </div>
+        <ul className="items chips">
+          {shown.map((f) => <li key={f}>{f}</li>)}
+        </ul>
       </div>
     </Section>
   );
@@ -1173,6 +1361,33 @@ return (
   </div>
 );`,
   },
+  {
+    title: "8. Infinite scroll",
+    desc: "Put <InfiniteScroll /> after your list — it loads the next batch as it scrolls into view.",
+    code: `import { InfiniteScroll, useLoadMore } from "react-next-pagination-pro";
+
+const { visible, hasMore, loading, loadMore } = useLoadMore({
+  fetchMore: (offset, size) => fetch(\`/api/posts?offset=\${offset}&limit=\${size}\`).then((r) => r.json()),
+  total: 500,
+  pageSize: 20,
+});
+
+return (
+  <>
+    {visible.map((post) => <PostCard key={post.id} post={post} />)}
+    <InfiniteScroll hasMore={hasMore} loading={loading} onLoadMore={loadMore} />
+  </>
+);`,
+  },
+  {
+    title: "9. Carousel dots & A–Z index",
+    desc: "Dots for sliders / onboarding; a letter bar for directories and glossaries.",
+    code: `import { DotsPagination, AlphabetPagination } from "react-next-pagination-pro";
+
+<DotsPagination currentPage={slide} totalPages={5} onPageChange={setSlide} effect="expand" />
+
+<AlphabetPagination value={letter} onChange={setLetter} available={["A", "B", "M"]} showAll />`,
+  },
 ];
 
 function UsageGuide() {
@@ -1199,7 +1414,10 @@ const TABS = [
   { id: "table", label: "📊 Table" },
   { id: "ellipsis", label: "… Ellipsis" },
   { id: "compact", label: "📱 Compact" },
+  { id: "dots", label: "⚪ Dots" },
+  { id: "alpha", label: "🔤 A–Z" },
   { id: "loadmore", label: "⬇️ Load more" },
+  { id: "infinite", label: "♾️ Infinite" },
   { id: "cursor", label: "🔀 Cursor" },
   { id: "url", label: "🔗 URL sync" },
   { id: "hook", label: "🧩 Hook" },
@@ -1247,6 +1465,16 @@ export function App() {
     document.body.classList.toggle("dark", dark);
   }, [dark]);
 
+  // On phones the tab bar is one swipeable row; keep the active tab in view
+  // (e.g. after the hero's "Browse variants" jumps to the last tabs).
+  const tabsRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const bar = tabsRef.current;
+    const active = bar?.querySelector<HTMLElement>(".tab.is-active");
+    if (!bar || !active || bar.scrollWidth <= bar.clientWidth) return;
+    bar.scrollTo({ left: active.offsetLeft - (bar.clientWidth - active.offsetWidth) / 2, behavior: "smooth" });
+  }, [tab]);
+
   // "all" shows everything; any other tab shows only that section.
   const show = (id: TabId) => tab === "all" || tab === id;
 
@@ -1286,11 +1514,12 @@ export function App() {
 
       <div className="wrap" id="top">
         <div className="hero">
-          <span className="badge">{PAGINATION_VARIANTS.length}+ variants · v0.1.0</span>
+          <span className="badge">{PAGINATION_VARIANTS.length}+ variants · v{version}</span>
           <h1>The ultimate React pagination</h1>
           <p>
-            {PAGINATION_VARIANTS.length}+ UI variants · headless hooks · cursor / load-more / URL sync ·
-            keyboard &amp; ARIA accessible · dark mode · RTL · TypeScript. Everything below is live.
+            {PAGINATION_VARIANTS.length}+ UI variants · headless hooks · infinite scroll · cursor / load-more /
+            URL sync · carousel dots · A–Z index · keyboard &amp; ARIA accessible · dark mode · RTL · TypeScript.
+            Everything below is live.
           </p>
           <div className="hero-cta">
             <button className="btn-primary" onClick={() => changeTab("gallery")}>🎨 Browse variants</button>
@@ -1298,7 +1527,7 @@ export function App() {
           </div>
         </div>
 
-        <div className="tabs tabs-sticky" role="tablist" aria-label="Demo sections">
+        <div ref={tabsRef} className="tabs tabs-sticky" role="tablist" aria-label="Demo sections">
           {TABS.map((t) => (
             <button
               key={t.id}
@@ -1319,10 +1548,13 @@ export function App() {
           {show("ellipsis") && <EllipsisDemo />}
           {show("table") && <TableDemo />}
           {show("compact") && <CompactDemo />}
+          {show("dots") && <DotsDemo />}
           {show("loadmore") && <LoadMoreDemo />}
+          {show("infinite") && <InfiniteDemo />}
           {show("cursor") && <CursorDemo />}
           {show("url") && <UrlDemo />}
           {show("hook") && <HookDemo />}
+          {show("alpha") && <AlphabetDemo />}
         </div>
 
         {show("gallery") && <Gallery />}

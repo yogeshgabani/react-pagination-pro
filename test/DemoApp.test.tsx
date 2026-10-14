@@ -2,7 +2,9 @@ import { describe, it, expect } from "vitest";
 import { render, screen, fireEvent, within } from "@testing-library/react";
 import { App } from "../demo/src/App";
 
-describe("demo <App /> smoke", () => {
+// Rendering the whole demo (140+ paginations) in jsdom takes ~6s on a slow
+// machine — over vitest's 5s default, though nothing is actually hanging.
+describe("demo <App /> smoke", { timeout: 30_000 }, () => {
   it("opens the preview modal from a gallery tile and closes it", () => {
     render(<App />);
 

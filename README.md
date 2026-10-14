@@ -1,8 +1,24 @@
 # react-next-pagination-pro
 
-**[Live demo](https://rreact-pagination.netlify.app/)** · [npm](https://www.npmjs.com/package/react-next-pagination-pro) · [GitHub](https://github.com/yogeshgabani/react-pagination-pro)
+[![npm version](https://img.shields.io/npm/v/react-next-pagination-pro.svg)](https://www.npmjs.com/package/react-next-pagination-pro)
+[![npm downloads](https://img.shields.io/npm/dm/react-next-pagination-pro.svg)](https://www.npmjs.com/package/react-next-pagination-pro)
+[![types: TypeScript](https://img.shields.io/badge/types-TypeScript-3178c6.svg)](https://www.npmjs.com/package/react-next-pagination-pro)
+[![license: MIT](https://img.shields.io/npm/l/react-next-pagination-pro.svg)](./LICENSE)
 
-> The ultimate all-in-one React pagination package — **130+ UI variants**, headless hooks, cursor / load-more / URL-sync, full keyboard & ARIA accessibility, dark mode, RTL, and first-class TypeScript. Works with React 18/19, Next.js (App & Pages Router), Vite, CRA, Remix, Gatsby — SSR & CSR.
+**[Live demo](https://react-next-pagination.netlify.app/)** · [npm](https://www.npmjs.com/package/react-next-pagination-pro) · [GitHub](https://github.com/yogeshgabani/react-pagination-pro)
+
+[![react-next-pagination-pro — 130+ pagination components for React & Next.js](https://react-next-pagination.netlify.app/og-image.png)](https://react-next-pagination.netlify.app/)
+
+> The ultimate all-in-one React pagination package — **130+ UI variants**, headless hooks, infinite scroll, cursor / load-more / URL-sync, carousel dots, an A–Z index, full keyboard & ARIA accessibility, dark mode, RTL, and first-class TypeScript. Works with React 18/19, Next.js (App & Pages Router), Vite, CRA, Remix, Gatsby — SSR & CSR.
+
+## Why this one?
+
+- **Every pagination pattern in one package** — numbered pages, data-table footers, toolbar bars, mobile compact, load-more, **infinite scroll**, cursor APIs, URL sync, **carousel dots** and an **A–Z index**.
+- **Styled out of the box** — 130+ ready-made designs, swappable with one `variant` prop. Or go headless with the hooks.
+- **Accessible by default** — `<nav>` landmarks, `aria-current`, full keyboard support, visible focus, reduced-motion aware.
+- **Dark mode and RTL with zero config** — follows the visitor's OS theme automatically.
+- **Next.js-ready** — ships with `"use client"`, works in the App Router and SSR.
+- **Small API, zero dependencies** — only `react` / `react-dom` as peers; full TypeScript types.
 
 ## Install
 
@@ -47,7 +63,10 @@ export default function Example() {
 | `<BarPagination />` | Toolbar / footer **bar**: range summary + rows-per-page + numbers + "Go to page" input, in one responsive row |
 | `<CompactPagination />` | Mobile "‹ 5 of 50 ›" control |
 | `<LoadMorePagination />` | "Load more" button with loading / done states |
+| `<InfiniteScroll />` | **New** — loads the next batch as the user scrolls, with loading / retry / end states |
 | `<CursorPagination />` | Prev/Next for cursor-based APIs (unknown totals) |
+| `<DotsPagination />` | **New** — carousel / slider / onboarding dots: `expand`, `scale`, `slide`, `line` effects |
+| `<AlphabetPagination />` | **New** — A–Z letter bar for directories, glossaries and contacts |
 
 ### `<BarPagination />` — toolbar footer
 
@@ -79,12 +98,83 @@ function TableFooter() {
 }
 ```
 
+### `<InfiniteScroll />` — load as you scroll
+
+Place it after your list. It watches itself with an `IntersectionObserver` (no
+scroll listeners), loads the next batch shortly before it comes into view, keeps
+going until the screen is filled, and stops when `hasMore` is false. A failed
+load shows a **Retry** button instead of hammering your API.
+
+```tsx
+import { InfiniteScroll, useLoadMore } from "react-next-pagination-pro";
+
+function Feed() {
+  const { visible, hasMore, loading, loadMore } = useLoadMore({
+    fetchMore: (offset, size) =>
+      fetch(`/api/posts?offset=${offset}&limit=${size}`).then((r) => r.json()),
+    total: 500,
+    pageSize: 20,
+  });
+
+  return (
+    <>
+      {visible.map((post) => <PostCard key={post.id} post={post} />)}
+      <InfiniteScroll
+        hasMore={hasMore}
+        loading={loading}
+        onLoadMore={loadMore}
+        // root={scrollBoxElement}       // scroll inside a container instead of the page
+        // rootMargin="0px 0px 300px 0px" // how early to start loading
+        // endMessage="You're all caught up"
+      />
+    </>
+  );
+}
+```
+
+Need your own markup? `useInfiniteScroll({ hasMore, loading, onLoadMore })` returns a
+`sentinelRef` to attach to any element, plus `pending`, `error` and `retry()`.
+
+### `<DotsPagination />` — carousel & onboarding dots
+
+```tsx
+<DotsPagination
+  currentPage={slide}
+  totalPages={6}
+  onPageChange={setSlide}
+  effect="expand"   // expand | scale | slide | line
+  showPrevNext      // optional ‹ › arrows
+/>
+```
+
+Long ranges turn into an Instagram-style sliding window whose edge dots shrink
+(`maxDots`, default 7; pass `Infinity` to always show every dot). Every dot is a
+real button with a 24px hit area, `aria-current`, and arrow / Home / End keys.
+
+### `<AlphabetPagination />` — A–Z index
+
+```tsx
+const letters = [...new Set(contacts.map((c) => c.name[0].toUpperCase()))];
+
+<AlphabetPagination
+  value={letter}          // null = "All"
+  onChange={setLetter}
+  available={letters}     // letters with no entries render disabled
+  showAll                 // prepend an "All" button
+  // letters={["#", ...ALPHABET]}   // custom set, e.g. a numbers bucket
+/>
+```
+
+Arrow / Home / End skip empty letters, and typing a letter jumps straight to it.
+Letters are regular page buttons, so every `variant`, `color`, `shape` and `size` applies.
+
 ## Hooks (headless — bring your own markup)
 
 | Hook | Returns |
 | --- | --- |
 | `usePagination()` | computed `items` (pages + ellipsis), flags, item window |
 | `useLoadMore()` | `visible`, `hasMore`, `loadMore()` (client array **or** server `fetchMore`) |
+| `useInfiniteScroll()` | `sentinelRef` that calls `onLoadMore` when scrolled into view, plus `pending`, `error`, `retry()` |
 | `useCursorPagination()` | `items`, `next()`, `prev()`, `hasNext/hasPrev` with a cursor stack |
 | `useUrlPagination()` | two-way `?page=` sync (History API or your router's `navigate`) |
 
@@ -99,7 +189,7 @@ const { items, startItem, endItem } = usePagination({
 ## 130+ variants
 
 Every variant is a CSS class you select with the `variant` prop — preview them all
-in the [live demo](https://rreact-pagination.netlify.app/). Grouped into
+in the [live demo](https://react-next-pagination.netlify.app/). Grouped into
 collections — import `VARIANT_COLLECTIONS` / `PAGINATION_VARIANTS` to enumerate them:
 
 `minimal` · `modern` (material, fluent, apple…) · `glass` · `soft` (neumorphism) ·
@@ -132,7 +222,7 @@ Presets **and** runtime token overrides:
 **Zero config — it just works.** By default (`dark="auto"`) every component reads
 the visitor's `prefers-color-scheme` and renders light or dark to match their OS,
 switching live if they change their system theme. This is exactly what you see in
-the [live demo](https://rreact-pagination.netlify.app/), and what you'll get on install:
+the [live demo](https://react-next-pagination.netlify.app/), and what you'll get on install:
 
 ```tsx
 <Pagination currentPage={page} totalPages={50} onPageChange={setPage} />
@@ -172,9 +262,34 @@ const { page, setPage } = useUrlPagination({
 });
 ```
 
+## Migrating from react-paginate
+
+The main differences: pages are **1-based**, `onPageChange` receives the page
+number directly, and it comes styled (no CSS to write).
+
+```tsx
+// Before — react-paginate
+<ReactPaginate
+  pageCount={20}
+  forcePage={page - 1}                       // 0-based
+  onPageChange={({ selected }) => setPage(selected + 1)}
+  pageRangeDisplayed={3}
+  marginPagesDisplayed={1}
+/>
+
+// After — react-next-pagination-pro
+<Pagination
+  totalPages={20}
+  currentPage={page}                         // 1-based
+  onPageChange={setPage}
+  siblingCount={1}                           // pages on each side of the current one
+  boundaryCount={1}                          // pages pinned at each end
+/>
+```
+
 ## Live demo
 
-**https://rreact-pagination.netlify.app/** — every component and all variants,
+**https://react-next-pagination.netlify.app/** — every component and all variants,
 in light & dark. To run it locally:
 
 ```bash
