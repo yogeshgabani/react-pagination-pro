@@ -1158,3 +1158,176 @@
     .rpp-bar-spread .rpp-bar-main { margin-inline: 0; }
   }
 }
+
+/* ============================================================
+   Infinite scroll footer (<InfiniteScroll />)
+   The root doubles as the IntersectionObserver sentinel; min-height keeps it
+   observable while empty and stops the layout jumping between states.
+   ============================================================ */
+.rpp-infinite {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: var(--rpp-size);
+  gap: var(--rpp-gap);
+  padding: 8px 0;
+}
+
+.rpp-infinite-msg {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--rpp-font-size);
+  color: var(--rpp-muted);
+}
+
+.rpp-infinite-retry {
+  padding: 0 16px;
+}
+
+.rpp-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid color-mix(in srgb, var(--rpp-primary) 25%, transparent);
+  border-top-color: var(--rpp-primary);
+  border-radius: 50%;
+  animation: rpp-spin 0.7s linear infinite;
+}
+
+@keyframes rpp-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ============================================================
+   Dots pagination (<DotsPagination />) — carousel / slider / onboarding.
+   Each button is a 24px hit area; the visible dot is its ::before.
+   ============================================================ */
+.rpp-dots {
+  --rpp-dot: 8px;
+  --rpp-dot-pad-x: 8px;
+  --rpp-dot-pad-y: 8px;
+  /* Distance between dot centres — what the slide indicator moves by. */
+  --rpp-dot-pitch: calc(var(--rpp-dot) + 2 * var(--rpp-dot-pad-x));
+  --rpp-dot-idle: color-mix(in srgb, var(--rpp-text) 22%, transparent);
+  gap: var(--rpp-gap);
+  flex-wrap: nowrap;
+}
+.rpp-dots.rpp-s-sm { --rpp-dot: 6px; }
+.rpp-dots.rpp-s-lg { --rpp-dot: 11px; }
+
+.rpp-dots-track {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.rpp-dots-track > li {
+  display: flex;
+}
+
+.rpp-dot {
+  --rpp-dot-w: var(--rpp-dot);
+  --rpp-dot-h: var(--rpp-dot);
+  --rpp-dot-scale: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: content-box;
+  width: var(--rpp-dot-w);
+  height: var(--rpp-dot);
+  margin: 0;
+  padding: var(--rpp-dot-pad-y) var(--rpp-dot-pad-x);
+  border: 0;
+  background: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.rpp-dot::before {
+  content: "";
+  flex: none;
+  width: var(--rpp-dot-w);
+  height: var(--rpp-dot-h);
+  border-radius: 999px;
+  background: var(--rpp-dot-idle);
+  transform: scale(var(--rpp-dot-scale));
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    background-color 0.2s ease;
+}
+.rpp-dot:hover::before {
+  background: color-mix(in srgb, var(--rpp-text) 45%, transparent);
+}
+.rpp-dot:focus-visible {
+  outline: none;
+}
+.rpp-dot:focus-visible::before {
+  outline: 2px solid var(--rpp-primary);
+  outline-offset: 3px;
+}
+.rpp-dot-active::before,
+.rpp-dot-active:hover::before {
+  background: var(--rpp-active-bg, var(--rpp-primary));
+}
+
+/* Window edges shrink (Instagram-style) when more pages lie beyond them. */
+.rpp-dot-near { --rpp-dot-scale: 0.7; }
+.rpp-dot-far { --rpp-dot-scale: 0.45; }
+
+/* expand: the active dot stretches into a pill. */
+.rpp-dots-expand .rpp-dot-active { --rpp-dot-w: calc(var(--rpp-dot) * 3); }
+
+/* scale: the active dot grows in place. */
+.rpp-dots-scale .rpp-dot-active { --rpp-dot-scale: 1.6; }
+
+/* line: story-style segments, packed tighter than dots. */
+.rpp-dots-line {
+  --rpp-dot-pad-x: 3px;
+}
+.rpp-dots-line .rpp-dot {
+  --rpp-dot-w: calc(var(--rpp-dot) * 3);
+  --rpp-dot-h: calc(var(--rpp-dot) / 2);
+}
+
+/* slide: one indicator glides between dots, so the active dot itself stays idle. */
+.rpp-dots-slide .rpp-dot-active::before {
+  background: var(--rpp-dot-idle);
+}
+.rpp-dots-indicator {
+  position: absolute;
+  top: 50%;
+  left: var(--rpp-dot-pad-x);
+  width: var(--rpp-dot);
+  height: var(--rpp-dot);
+  margin-top: calc(var(--rpp-dot) / -2);
+  border-radius: 999px;
+  background: var(--rpp-active-bg, var(--rpp-primary));
+  transform: translateX(calc(var(--rpp-dot-i) * var(--rpp-dot-pitch)));
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+}
+[dir="rtl"] .rpp-dots-indicator {
+  left: auto;
+  right: var(--rpp-dot-pad-x);
+  transform: translateX(calc(var(--rpp-dot-i) * var(--rpp-dot-pitch) * -1));
+}
+
+/* ============================================================
+   Alphabet pagination (<AlphabetPagination />) — A–Z letter bar.
+   Letters are regular .rpp-item buttons, so every variant applies.
+   ============================================================ */
+.rpp-alpha .rpp-item {
+  min-width: calc(var(--rpp-size) * 0.85);
+  padding: 0 6px;
+}
+.rpp-alpha .rpp-alpha-all {
+  padding: 0 12px;
+}
+
+/* `.rpp *` in the reduced-motion block above can't reach pseudo-elements. */
+@media (prefers-reduced-motion: reduce) {
+  .rpp .rpp-dot::before {
+    transition: none !important;
+  }
+}
